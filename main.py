@@ -1,22 +1,22 @@
 import os
-from supabase import create_client, Client
-from dotenv import load_dotenv
+import Database.db
 
-load_dotenv()
-
-from flask import Flask, request
+from flask import Flask, request, abort
 
 app = Flask(__name__)
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
 
-data, count = supabase.table('users').insert({"id":1, "username":"fire"}).execute()
+import Routes.auth_routes
+import Routes.classic_routes
 
-@app.route('/')
-def default():
-    return "Hello World"
+@app.route('/register', methods=['POST'])
+def register():
+    email = request.json['email']
+    password = request.json['password']
 
+    user, error = supabase.auth.sign_up({
+    'email': email,
+    'password': password
+})
 
 if __name__ == '__main__':
     app.run(debug=True)
