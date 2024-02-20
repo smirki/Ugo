@@ -1,4 +1,5 @@
 from __main__ import app
+import Database.db
 
 @app.route('/')
 def default():
