@@ -2,8 +2,10 @@ import * as React from 'react';
 import { StyleSheet, Text, View, Image , Button} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { styles }  from './style.js'
 
-
+//components
+import HomeScreen from './components/HomeScreen.js';
 
 const Onboarding = ({navigation}) => {
   return(
@@ -21,7 +23,6 @@ accessibilityLabel="Learn more about this purple button"
   )
 }
 
-const HomeScreen = ({navigation}) => { <View style={styles.container}> hi </View> };
 
 const Stack = createNativeStackNavigator();
 
@@ -39,25 +40,6 @@ const App = () => {
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FECC4C',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bigText: {
-    fontSize: 40,
-    textAlign: "center",
-    color: 'black',
-  },
-  mainCircleImage: {
-    height: 80,
-    width: 80,
-    borderRadius: 40,
-  }
-});
 
 
 export default App;
