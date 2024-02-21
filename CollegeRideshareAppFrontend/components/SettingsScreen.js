@@ -1,11 +1,27 @@
-import React from 'react';
-import { View, Text, Switch, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Switch, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 
 const SettingsScreen = () => {
-  // State for the switches in the settings, defaulted to false
-  const [isEnabled, setIsEnabled] = React.useState(false);
+  // Example of individual state for different settings
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  // Toggle functions for each setting
+  const toggleNotifications = () => setNotificationsEnabled(!notificationsEnabled);
+  const toggleLocationTracking = () => setLocationTrackingEnabled(!locationTrackingEnabled);
+  const toggleDarkMode = () => setDarkModeEnabled(!darkModeEnabled);
+
+  // Function to open URLs for privacy policy and terms of service
+  const openURL = (url) => {
+    Linking.canOpenURL(url).then((supported) => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        console.log("Don't know how to open URI: " + url);
+      }
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -14,23 +30,42 @@ const SettingsScreen = () => {
         <Text style={styles.settingText}>Push Notifications</Text>
         <Switch
           trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-          ios_backgroundColor="#3e3e3e"
-          onValueChange={toggleSwitch}
-          value={isEnabled}
+          thumbColor={notificationsEnabled ? '#f5dd4b' : '#f4f3f4'}
+          onValueChange={toggleNotifications}
+          value={notificationsEnabled}
         />
       </View>
       <View style={styles.settingItem}>
         <Text style={styles.settingText}>Location Tracking</Text>
         <Switch
           trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-          ios_backgroundColor="#3e3e3e"
-          onValueChange={toggleSwitch}
-          value={isEnabled}
+          thumbColor={locationTrackingEnabled ? '#f5dd4b' : '#f4f3f4'}
+          onValueChange={toggleLocationTracking}
+          value={locationTrackingEnabled}
         />
       </View>
-      {/* Add more settings items here */}
+      <View style={styles.settingItem}>
+        <Text style={styles.settingText}>Dark Mode</Text>
+        <Switch
+          trackColor={{ false: '#767577', true: '#81b0ff' }}
+          thumbColor={darkModeEnabled ? '#f5dd4b' : '#f4f3f4'}
+          onValueChange={toggleDarkMode}
+          value={darkModeEnabled}
+        />
+      </View>
+      {/* Additional settings can be added here */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => openURL('https://yourwebsite.com/privacy-policy')}
+      >
+        <Text style={styles.buttonText}>Privacy Policy</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => openURL('https://yourwebsite.com/terms-of-service')}
+      >
+        <Text style={styles.buttonText}>Terms of Service</Text>
+      </TouchableOpacity>
       <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>Log Out</Text>
       </TouchableOpacity>
@@ -72,7 +107,6 @@ const styles = StyleSheet.create({
     color: 'black',
     fontWeight: 'bold',
   },
-  // ... add any other styles you might need
 });
 
 export default SettingsScreen;
