@@ -1,5 +1,5 @@
 from math import radians, sin, cos, sqrt, atan2
-from operator import itemgetter
+
 
 class MatchingService:
     @staticmethod
