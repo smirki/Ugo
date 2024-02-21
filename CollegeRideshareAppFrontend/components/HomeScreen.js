@@ -123,14 +123,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
       },
       searchInputContainer: {
-        flex: 1, // Take available space
-        marginRight: 10, // Add margin between search input and filter button
+        flex: 1, 
+        marginRight: 10, 
       },
       searchInput: {
         // Style your search input
       },
       filterButton: {
-        // Style your filter button
+        
       },searchBar: {
         flexDirection: 'row',
         paddingHorizontal: 10,
@@ -160,7 +160,17 @@ const styles = StyleSheet.create({
       },
   });
 
+
+  
+  
+
 const HomeScreen = ({ navigation }) => {
+  const handlePressGo = (item) => {
+    navigation.navigate('RideConfirmation', {
+      pickupAddress: 'Pickup Address Here or Get User Address', 
+      destinationAddress: item.title,
+    });
+  };
 
     // State for search input
   const [search, setSearch] = useState('');
@@ -184,7 +194,7 @@ const HomeScreen = ({ navigation }) => {
         </View>
         <Text style={styles.destinationTitle}>{item.title}</Text>
         <Text style={styles.destinationTime}>{item.time}</Text>
-        <TouchableOpacity style={styles.goButtonSmall}>
+        <TouchableOpacity style={styles.goButtonSmall} onPress={() => handlePressGo(item)}>
           <Text style={styles.goButtonTextSmall}>GO</Text>
         </TouchableOpacity>
       </View>
@@ -211,7 +221,7 @@ const HomeScreen = ({ navigation }) => {
           value={search}
         />
         <TouchableOpacity style={styles.filterButton} onPress={() => {}}>
-          <Ionicons name="md-options" size={24} color="white" />
+          <Ionicons name="options" size={24} color="white" />
         </TouchableOpacity>
       </View>
         <Text style={styles.sectionHeader}>Popular Destinations</Text>

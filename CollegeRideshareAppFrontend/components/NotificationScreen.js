@@ -1,11 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 
-// Dummy data for notifications
 const notifications = [
   { id: '1', title: 'Your ride is on the way!', time: 'Just now' },
   { id: '2', title: 'Promo: 20% off your next ride', time: '1 hour ago' },
-  // ... more notifications
 ];
 
 const NotificationsScreen = () => {
@@ -54,7 +52,6 @@ const styles = StyleSheet.create({
     color: 'black',
     opacity: 0.5,
   },
-  // ... add any other styles you might need
 });
 
 export default NotificationsScreen;
