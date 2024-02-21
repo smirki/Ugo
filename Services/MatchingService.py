@@ -4,6 +4,7 @@ from math import radians, sin, cos, sqrt, atan2
 class MatchingService:
     @staticmethod
     def haversine_distance(loc1, loc2):
+        #TODO NEED TO UPDATE THIS SO IT USES API CALL TO CALCLUATE THE DISTANCE
         # Calculate the Haversine distance between two locations in kilometers
         R = 6371  # Earth radius in kilometers
 
