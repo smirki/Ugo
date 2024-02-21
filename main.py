@@ -8,6 +8,6 @@ app = Flask(__name__)
 
 import Routes.auth_routes
 import Routes.classic_routes
-
+import Routes.ride_routes
 if __name__ == '__main__':
     app.run(debug=True)
