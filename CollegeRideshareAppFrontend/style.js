@@ -15,5 +15,11 @@ export const styles = StyleSheet.create({
       height: 80,
       width: 80,
       borderRadius: 40,
+    },
+    backgroundHome: {
+      backgroundColor: 'F5F5F5',
+    },
+    searchbarHome: {
+      width: 80,
     }
   });
