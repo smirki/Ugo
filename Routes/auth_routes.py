@@ -18,21 +18,15 @@ def register():
             return jsonify({'error': error}), 400
     else:
         return "Not a school email"
-
-
-    
-   
     return jsonify({'message': 'User registered successfully!', 'user':user}), 200
 
 
 @app.route('/login', methods=['POST'])
 def login():
-    email = request.json['email']
-    password = request.json['password']
-
-    user, error = supabase.auth.sign_in_with_password({'email':email, 'password':password})
-    if error:
-        return jsonify({'error': error.message}), 400
+    data = request.json
+    print(data['email'])
+    user = supabase.auth_sign_in(email=data['email'], password=data['password'])
+    print(user)
     return jsonify({'message': 'User Login successfully!', 'user':user}), 200
 
 @app.route('/logout', methods=['POST'])
