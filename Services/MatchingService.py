@@ -21,19 +21,21 @@ class MatchingService:
         return distance
 
     @staticmethod
-    def find_matching_driver(user_profile, available_drivers_json):
+    def find_matching_driver(user_profile, available_drivers_json, pickup_location):
 
-        user_location = user_profile['location']
+        user_profile = user_profile
         available_drivers_list = available_drivers_json
-
+        pickup_location = pickup_location
+        print(pickup_location)
         sorted_available_drivers_list = sorted(
     available_drivers_list['available_drivers'],
-    key=lambda driver: MatchingService.haversine_distance(list(user_location.values()), (driver['location']['latitude'], driver['location']['longitude']))
+    key=lambda driver: MatchingService.haversine_distance(pickup_location, (driver['location']['latitude'], driver['location']['longitude']))
 )
        
 
         matching_stack = sorted_available_drivers_list[::-1]
 
         return matching_stack
+        return None
        
 

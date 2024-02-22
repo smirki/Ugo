@@ -1,12 +1,13 @@
 # python classes that repesent the data models
 class Payment:
-    def __init__(self, payment_id, amount, payment_date, payment_method, driver_id, passenger_id):
+    def __init__(self, payment_id, amount, payment_date, payment_method, driver_id, passenger_id, ride_id):
         self.payment_id = payment_id
         self.amount = amount
         self.payment_date = payment_date
         self.payment_method = payment_method
         self.driver_id = driver_id
         self.passenger_id = passenger_id
+        self.ride_id = ride_id
 
     def to_dict(self):
         return {
