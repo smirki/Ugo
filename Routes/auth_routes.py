@@ -9,12 +9,19 @@ def register():
     email = request.json['email']
     password = request.json['password']
 
-    user, error = supabase.auth.sign_up({
-    'email': email,
-    'password': password,
-    })
-    if error:
-        return jsonify({'error': error}), 400
+    if 'edu' in email:
+        user, error = supabase.auth.sign_up({
+            'email': email,
+            'password': password,
+         })
+        if error:
+            return jsonify({'error': error}), 400
+    else:
+        return "Not a school email"
+
+
+    
+   
     return jsonify({'message': 'User registered successfully!', 'user':user}), 200
 
 

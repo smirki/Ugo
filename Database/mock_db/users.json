@@ -1,0 +1,47 @@
+[
+  {
+    "user_id": 1,
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "password": "password123",
+    "gender": "female",
+    "num_passengers": 2,
+    "location": { "latitude": 37.7749, "longitude": -122.4194 }
+  },
+  {
+    "user_id": 2,
+    "name": "Bob Smith",
+    "email": "bob@example.com",
+    "password": "securepass",
+    "gender": "male",
+    "num_passengers": 1,
+    "location": { "latitude": 34.0522, "longitude": -118.2437 }
+  },
+  {
+    "user_id": 3,
+    "name": "Charlie Brown",
+    "email": "charlie@example.com",
+    "password": "pass123",
+    "gender": "male",
+    "num_passengers": 3,
+    "location": { "latitude": 40.7128, "longitude": -74.006 }
+  },
+  {
+    "user_id": 4,
+    "name": "Diana Miller",
+    "email": "diana@example.com",
+    "password": "diana_pass",
+    "gender": "female",
+    "num_passengers": 1,
+    "location": { "latitude": 41.8781, "longitude": -87.6298 }
+  },
+  {
+    "user_id": 5,
+    "name": "Ethan Davis",
+    "email": "ethan@example.com",
+    "password": "secure123",
+    "gender": "male",
+    "num_passengers": 4,
+    "location": { "latitude": 51.5074, "longitude": -0.1278 }
+  }
+]

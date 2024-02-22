@@ -1,13 +1,13 @@
-#driver_id, license_number, vehicle_info, ratings
-# one to one wor one to many with user
+# driver_id, license_number, vehicle_info, ratings
+# one to one or one to many with user
 class Driver(User):
-    def __init__(self, user_id, name, email, password, gender, availability=None, preferences=None, location=None):
-        super().__init__(user_id, name, email, password, gender, preferences, location)
-        self.availability = availability or {}
+    def __init__(self, user_id, name, email, password, gender, is_available=False, location=None):
+        super().__init__(user_id, name, email, password, gender, location=location)
+        self.is_available = is_available
 
     def to_dict(self):
         user_dict = super().to_dict()
-        user_dict['availability'] = self.availability
+        user_dict['is_available'] = self.is_available
         return user_dict
 
     @classmethod
@@ -18,8 +18,6 @@ class Driver(User):
             email=data['email'],
             password=data['password'],
             gender=data['gender'],
-            availability=data.get('availability', {}),
-            preferences=data.get('preferences', {}),
+            is_available=data.get('is_available', False),
             location=data.get('location', {})
         )
-
