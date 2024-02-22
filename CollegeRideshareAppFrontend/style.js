@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
         backgroundColor: '#fff',
       },
       header: {
-        marginTop: 50, // Adjust to your notch size or status bar height
+        marginTop: 70, 
       },
       headerTitle: {
         fontSize: 24,
@@ -52,7 +52,7 @@ export const styles = StyleSheet.create({
         margin: 10,
       },
       destinationsList: {
-        alignSelf: 'stretch', // Ensure the FlatList takes full width
+        alignSelf: 'stretch', 
       },
       destinationItem: {
         flex: 1,
@@ -93,7 +93,7 @@ export const styles = StyleSheet.create({
       },
       goButton: {
         position: 'absolute',
-        bottom: 50, // Adjust as needed
+        bottom: 50, 
         alignSelf: 'center',
         backgroundColor: '#ffcc00',
         borderRadius: 30,
@@ -104,6 +104,6 @@ export const styles = StyleSheet.create({
         fontWeight: 'bold',
       },
       bottomMenu: {
-        // Style for bottom menu
+        
       },
   });

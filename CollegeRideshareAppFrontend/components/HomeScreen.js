@@ -15,15 +15,33 @@ import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-ico
 
 // Dummy data for the flat list
 const data = [
-  { key: '1', title: 'ATO', time: '8 PM EST.', backgroundColor: '#EBF8EE' },
-  { key: '2', title: 'World Nightclub', time: '8 PM EST.', backgroundColor: '#FD4E26' },
-  { key: '3', title: 'ATO', time: '8 PM EST.', backgroundColor: '#EBF8EE' },
-  { key: '4', title: 'World Nightclub', time: '8 PM EST.', backgroundColor: '#FD4E26' },
-  { key: '5', title: 'ATO', time: '8 PM EST.', backgroundColor: '#EBF8EE' },
-  { key: '6', title: 'World Nightclub', time: '8 PM EST.', backgroundColor: '#FD4E26' },
-  { key: '7', title: 'ATO', time: '8 PM EST.', backgroundColor: '#EBF8EE' },
-  { key: '8', title: 'World Nightclub', time: '8 PM EST.', backgroundColor: '#FD4E26' },
-];
+  { key: '1', title: 'AvidXchange Music Factory', time: '9 PM EST', backgroundColor: '#EBF8EE', category: 'Nightlife' },
+  { key: '2', title: 'Bojangles Coliseum', time: '8 PM EST', backgroundColor: '#FD4E26', category: 'Nightlife' },
+  { key: '3', title: 'Ink n Ivy', time: '10 PM EST', backgroundColor: '#EBF8EE' },
+  { key: '4', title: 'Merchant & Trade', time: '7 PM EST', backgroundColor: '#FD4E26' },
+  { key: '5', title: 'Middle C Jazz', time: '6 PM EST', backgroundColor: '#EBF8EE' },
+  { key: '6', title: 'Nuvole Rooftop TwentyTwo', time: '8 PM EST', backgroundColor: '#FD4E26' },
+  { key: '7', title: 'Ovens Auditorium', time: '9 PM EST', backgroundColor: '#EBF8EE' },
+  { key: '8', title: 'Petra\'s', time: '10 PM EST', backgroundColor: '#FD4E26' },
+  { key: '9', title: 'Pinhouse', time: '11 AM EST', backgroundColor: '#EBF8EE' },
+  { key: '10', title: 'PNC Music Pavilion', time: '8 PM EST', backgroundColor: '#FD4E26' },
+  { key: '11', title: 'Puttery', time: '7 PM EST', backgroundColor: '#EBF8EE' },
+  { key: '12', title: 'Skyla Credit Union Amphitheatre', time: '9 PM EST', backgroundColor: '#FD4E26' },
+  { key: '13', title: 'Society at 229', time: '10 PM EST', backgroundColor: '#EBF8EE' },
+  { key: '14', title: 'Spectrum Center', time: '8 PM EST', backgroundColor: '#FD4E26' },
+  { key: '15', title: 'SupperClub', time: '11 PM EST', backgroundColor: '#EBF8EE' },
+  { key: '16', title: 'The Amp Ballantyne', time: '9 PM EST', backgroundColor: '#FD4E26' },
+  { key: '17', title: 'The Comedy Zone', time: '8 PM EST', backgroundColor: '#EBF8EE' },
+  { key: '18', title: 'The Fillmore', time: '10 PM EST', backgroundColor: '#FD4E26' },
+  { key: '19', title: 'The Underground', time: '9 PM EST', backgroundColor: '#EBF8EE' },
+  { key: '20', title: 'The Union at Station West', time: '8 PM EST', backgroundColor: '#FD4E26' },
+  // Adding fictional grocery stores with random times
+  { key: '21', title: 'Charlotte Grocery Store A', time: 'Open 24 Hours', backgroundColor: '#B2EBF2', category: 'Grocery' },
+  { key: '22', title: 'Charlotte Grocery Store B', time: '6 AM - 11 PM EST', backgroundColor: '#B2EBF2', category: 'Grocery' },
+  { key: '23', title: 'Charlotte Grocery Store C', time: '7 AM - 10 PM EST', backgroundColor: '#B2EBF2' },
+  { key: '24', title: 'Charlotte Grocery Store D', time: '5 AM - Midnight EST', backgroundColor: '#B2EBF2' },
+  // ... add more venues and grocery stores as needed
+]; 
 
 const styles = StyleSheet.create({
     container: {
@@ -123,14 +141,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
       },
       searchInputContainer: {
-        flex: 1, // Take available space
-        marginRight: 10, // Add margin between search input and filter button
+        flex: 1, 
+        marginRight: 10, 
       },
       searchInput: {
         // Style your search input
       },
       filterButton: {
-        // Style your filter button
+        
       },searchBar: {
         flexDirection: 'row',
         paddingHorizontal: 10,
@@ -158,14 +176,50 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         padding: 5,
       },
+      filtersContainer: {
+        flexDirection: 'row',
+    flexWrap: 'wrap', // This allows the filter tags to wrap to the next line
+    justifyContent: 'center',
+    paddingVertical: 10,
+      },
+      filterTag: {
+        backgroundColor: '#f0f0f0',
+        borderRadius: 20,
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        marginHorizontal: 5,
+      },
+      activeFilterTag: {
+        backgroundColor: '#FECC4C', // Change color for active state
+        color: 'white',
+      },
+      filterTagText: {
+        color: 'black',
+      },
   });
 
+
+  
+  
+
 const HomeScreen = ({ navigation }) => {
+  const handlePressGo = (item) => {
+    navigation.navigate('RideConfirmation', {
+      pickupAddress: 'Pickup Address Here or Get User Address', 
+      destinationAddress: item.title,
+    });
+  };
 
     // State for search input
+
   const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
   // Animated value for the search input width
   const searchWidth = useRef(new Animated.Value(200)).current;
+
+  const filteredData = data.filter(item => 
+    activeCategory === 'All' || item.category === activeCategory
+  );
     
     const animateSearchBar = () => {
         // Animate the width of the search bar
@@ -184,10 +238,20 @@ const HomeScreen = ({ navigation }) => {
         </View>
         <Text style={styles.destinationTitle}>{item.title}</Text>
         <Text style={styles.destinationTime}>{item.time}</Text>
-        <TouchableOpacity style={styles.goButtonSmall}>
+        <TouchableOpacity style={styles.goButtonSmall} onPress={() => handlePressGo(item)}>
           <Text style={styles.goButtonTextSmall}>GO</Text>
         </TouchableOpacity>
       </View>
+    );
+
+    const renderFilterTag = (category) => (
+      <TouchableOpacity
+        key={category}
+        style={[styles.filterTag, activeCategory === category && styles.activeFilterTag]}
+        onPress={() => setActiveCategory(category)}
+      >
+        <Text style={styles.filterTagText}>{category}</Text>
+      </TouchableOpacity>
     );
   
     return (
@@ -211,17 +275,19 @@ const HomeScreen = ({ navigation }) => {
           value={search}
         />
         <TouchableOpacity style={styles.filterButton} onPress={() => {}}>
-          <Ionicons name="md-options" size={24} color="white" />
+          <Ionicons name="options" size={24} color="white" />
         </TouchableOpacity>
       </View>
         <Text style={styles.sectionHeader}>Popular Destinations</Text>
-        <FlatList
-          data={data}
-          renderItem={renderDestination}
-          keyExtractor={item => item.key}
-          numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
-        />
+        <View style={styles.filtersContainer}>
+        {['All', 'Nightlife', 'Grocery', 'Party', 'Frat', 'Venue', 'Bar', 'Brewery'].map(renderFilterTag)}
+      </View>
+      <FlatList
+        data={filteredData}
+        renderItem={renderDestination}
+        keyExtractor={item => item.key}
+        numColumns={2}
+      />
         <TouchableOpacity style={styles.goButtonLarge} onPress = {() =>
       navigation.navigate('RideConfirmation')
     }>
