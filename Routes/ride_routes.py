@@ -14,12 +14,11 @@ DRIVERS_FILE = 'Database/mock_db/drivers.json'
 @app.route('/new_ride', methods=['POST'])
 def new_ride():
     try:
-        # Get JSON data from the POST request
+
         ride_data = request.get_json()
 
-        # Extract ride attributes from the JSON data
+
         ride_id = ride_data.get('ride_id')
-        pickup_location = ride_data.get('pickup_location')
         destination = ride_data.get('destination')
         number_of_riders = ride_data.get('number_of_riders')
         estimated_cost = ride_data.get('estimated_cost')
@@ -27,29 +26,32 @@ def new_ride():
         user_id = ride_data.get('user_id')
         
 
-        driver_response = requests.get('http://127.0.0.1:5000/find_driver', params={'lat': pickup_location[0], 'long': pickup_location[1], 'user_id': user_id})
        
+        user_response = requests.get('http://127.0.0.1:5000/find_user_profile', params={'user_id': user_id})
        
+        print(user_response.json()['location']['latitude'])
+        user_json = user_response.json()
+        driver_response = requests.get('http://127.0.0.1:5000/find_driver', params={'lat': user_json['location']['latitude'], 'long': user_json['location']['longitude'], 'user_id': user_id})
+
+        
         if driver_response.status_code == 200:
             driver = driver_response.json()
             
-            # Create a Ride instance after getting the response
+
             ride = Ride(
                 ride_id=ride_id,
-                pickup_location=pickup_location,
+                pickup_location= [user_json['location']['latitude'],user_json['location']['longitude']],
                 destination=destination,
                 number_of_riders=number_of_riders,
                 estimated_cost=estimated_cost,
                 status=status,
                 user=user_id,
-                driver=driver[0]['user_id'],
+                driver=driver[-1]['user_id'],
             )
             
             return jsonify(ride.to_dict())
 
-        # ride.assign_driver(driver[0]['user_id'])
 
-        # Return the ride details as a JSON response
         else:
             return jsonify({'error': 'Failed to find a driver'}), 500
 
