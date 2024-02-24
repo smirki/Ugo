@@ -1,37 +1,40 @@
 #each file contains routes related to different features of the app
 
 from flask import request, jsonify
-from Database.db import supabase
+from Database.db import db
+from werkzeug.security import generate_password_hash, check_password_hash
 from __main__ import app
+
+## have to enable JWT authentication
 
 @app.route('/register', methods=['POST'])
 def register():
     email = request.json['email']
     password = request.json['password']
-
     if 'edu' in email:
-        user, error = supabase.auth.sign_up({
-            'email': email,
-            'password': password,
-         })
-        if error:
-            return jsonify({'error': error}), 400
+        
+        if db.Users.find_one({'email': email}):
+            return jsonify({'error': 'User already exists'}), 409
+        
+    
+        hashed_password = generate_password_hash(password)
+        print(hashed_password)
+        
+        db.Users.insert_one({'email': email, 'password': hashed_password})
+        return jsonify({'message': 'User registered successfully!'}), 200
+        
     else:
-        return "Not a school email"
-    return jsonify({'message': 'User registered successfully!', 'user':user}), 200
-
-
+        return jsonify({'error': 'Not a school email'}), 400
+    
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    print(data['email'])
-    user = supabase.auth_sign_in(email=data['email'], password=data['password'])
-    print(user)
-    return jsonify({'message': 'User Login successfully!', 'user':user}), 200
+    email = request.json['email']
+    password = request.json['password']
 
-@app.route('/logout', methods=['POST'])
-def logout():
-    token = request.headers.get('Authorization')
-    if token:
-        supabase.auth.api.sign_out(token)
-    return jsonify({'message': 'Logged out'}), 200
+    user = db.Users.find_one({'email':email})
+
+    if user and check_password_hash(user['password'], password):
+        return jsonify({'message': 'User Logged in Successfully!'}), 200
+    else: 
+        return jsonify({'error': 'Invalid login credentials'}), 400
+

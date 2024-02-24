@@ -1,3 +1,5 @@
+'''
+
 from Models.Ride import Ride
 from flask import request, jsonify
 from Database.db import supabase
@@ -99,3 +101,5 @@ def find_available_drivers():
     available_drivers = [driver for driver in drivers if driver['is_available']]
     
     return jsonify({"available_drivers": available_drivers})
+
+'''
