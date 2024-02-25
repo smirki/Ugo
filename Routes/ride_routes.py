@@ -5,6 +5,7 @@ import json
 from Services.MatchingService import MatchingService
 from __main__ import app
 from Database.db import db
+from bson.json_util import dumps
 
 
 
@@ -67,12 +68,21 @@ def find_driver():
     user_id = request.args.get('user_id')
     
 
-    user_profile = requests.get('http://127.0.0.1:5000/find_user_profile', params={'user_id': user_id}).json()
-    available_drivers = requests.get('http://127.0.0.1:5000/find_available_drivers').json()
+    user_profile = db.Users.find_one({"user_id": user_id})
+    if user_profile:
+        user_profile['_id'] = str(user_profile['_id'])
+    else:
+        return jsonify({'error': 'User not found'}), 404
+    
 
-    pickup_location = [float(lat),float(long)]
+    available_drivers_cursor = db.Drivers.find({'is_available': True})
+    available_drivers = list(available_drivers_cursor)
+
+    pickup_location = [float(lat), float(long)]
     matching_stack = MatchingService.find_matching_driver(user_profile, available_drivers, pickup_location)
+
     return jsonify(matching_stack)
+
 
 
 @app.route('/find_user_profile', methods=['GET'])
@@ -91,10 +101,11 @@ def find_user_profile():
 @app.route('/find_available_drivers', methods=['GET'])
 def find_available_drivers():
 
-    with open(DRIVERS_FILE, 'r') as drivers_file:
-        drivers = json.load(drivers_file)
-    
+    available_drivers_cursor = db.Drivers.find({'is_available': True})    
 
-    available_drivers = [driver for driver in drivers if driver['is_available']]
-    
-    return jsonify({"available_drivers": available_drivers})
+    available_drivers = list(available_drivers_cursor)
+
+    # Convert any MongoDB BSON to JSON serializable format
+    available_drivers_json = dumps(available_drivers)
+
+    return jsonify({"available_drivers": json.loads(available_drivers_json)})
