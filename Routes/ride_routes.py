@@ -1,12 +1,10 @@
-'''
-
 from Models.Ride import Ride
 from flask import request, jsonify
-from Database.db import supabase
 import requests
 import json
 from Services.MatchingService import MatchingService
 from __main__ import app
+from Database.db import db
 
 
 
@@ -18,7 +16,6 @@ def new_ride():
     try:
 
         ride_data = request.get_json()
-
 
         ride_id = ride_data.get('ride_id')
         destination = ride_data.get('destination')
@@ -81,14 +78,14 @@ def find_driver():
 @app.route('/find_user_profile', methods=['GET'])
 def find_user_profile():
 
-    user_id = request.args.get('user_id')
-    with open(USERS_FILE, 'r') as users_file:
-        users = json.load(users_file)
-    
+    user_id = request.json['user_id']
+    user_profile = db.Users.find_one({"user_id":user_id})
 
-    user_profile = next((user for user in users if user['user_id'] == int(user_id)), None)
-    
-    return jsonify(user_profile)
+    if user_profile:
+        user_profile['_id'] = str(user_profile['_id'])
+        return jsonify(user_profile)
+    else:
+        return user_profile.json()
 
 
 @app.route('/find_available_drivers', methods=['GET'])
@@ -101,5 +98,3 @@ def find_available_drivers():
     available_drivers = [driver for driver in drivers if driver['is_available']]
     
     return jsonify({"available_drivers": available_drivers})
-
-'''

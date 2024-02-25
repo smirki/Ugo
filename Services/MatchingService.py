@@ -28,9 +28,11 @@ class MatchingService:
         pickup_location = pickup_location
         print(pickup_location)
         sorted_available_drivers_list = sorted(
-    available_drivers_list['available_drivers'],
-    key=lambda driver: MatchingService.haversine_distance(pickup_location, (driver['location']['latitude'], driver['location']['longitude']))
-)
+            available_drivers_list['available_drivers'],
+            key=lambda driver: MatchingService.haversine_distance(pickup_location, 
+            (driver['location']['latitude'], 
+            driver['location']['longitude']))
+        )
        
 
         matching_stack = sorted_available_drivers_list[::-1]

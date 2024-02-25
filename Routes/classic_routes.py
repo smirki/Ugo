@@ -1,6 +1,6 @@
 from __main__ import app
-import Database.db
+from Database.db import db
 
 @app.route('/')
 def default():
-    return "Hello World, {}".format(Database.db.test_response())
+    return "Hello World, {}".format(db.Users.find_one())
