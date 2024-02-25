@@ -257,7 +257,7 @@ const HomeScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
+        <TouchableOpacity onPress={() => navigation.replace('DriverTabs')}>
           <Ionicons name="menu" size={24} color="black" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('SettingsScreen')}>

@@ -4,8 +4,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-
-
 //components
 import HomeScreen from './components/HomeScreen.js';
 import Onboarding from './components/OnboardingScreen.js';
@@ -14,6 +12,10 @@ import SettingsScreen from './components/SettingsScreen';
 import RideConfirmation  from './components/RideConfirmation.js';
 import MapScreen from './components/MapScreen.js'
 import NotificationsScreen from './components/NotificationScreen.js'
+import DriverScreen from './components/DriverScreen.js';
+
+//navigation componenents
+import DriverTabs from './components/Navigation/DriverTabs.js'
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -80,6 +82,16 @@ function App() {
           name="SettingsScreen"
           component={SettingsScreen}
           options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="DriverScreen"
+          component={DriverScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name = "DriverTabs"
+          component = {DriverTabs}
+          options = {{headerShown: false}}
         />
       </Stack.Navigator>
     </NavigationContainer>

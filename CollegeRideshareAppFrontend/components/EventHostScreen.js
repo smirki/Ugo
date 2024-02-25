@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View } from 'react-native';
 
 const EventHostScreen = () => {
     <View>EventHostScreen</View>
