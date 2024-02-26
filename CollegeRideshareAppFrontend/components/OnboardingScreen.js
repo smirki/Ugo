@@ -13,9 +13,9 @@ const Onboarding = ({ navigation }) => {
       <View style={styles.circle}>
         <Image style={styles.carImage} source={require('../assets/logo.png')} />
       </View>
-      <Text style={styles.headerText}>Welcome to College Rideshare</Text>
+      <Text style={styles.headerText}>Welcome to Ugo</Text>
       <Text style={styles.subHeaderText}>
-        Getting you to where you need to be safely and making it affordable
+        Getting you to where you need to be safely and making it affordable.
       </Text>
       <TouchableOpacity
         style={styles.getStartedButton}
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   headerText: {
-    fontSize: 22,
+    fontSize: 110,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
