@@ -33,8 +33,8 @@ function HomeTabs() {
             iconName = focused ? 'notifications' : 'notifications';
           } else if (route.name === 'Map') {
             iconName = focused ? 'map' : 'map';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person';
+          } else if (route.name === 'Settings') {
+            iconName = focused ? 'settings' : 'settings';
           }
 
           // You can return any component that you like here!
@@ -52,7 +52,7 @@ function HomeTabs() {
       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
       <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }}/>
       <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }}/>
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }}/>
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }}/>
     </Tab.Navigator>
   );
 }
@@ -88,6 +88,7 @@ function App() {
           component={DriverScreen}
           options={{headerShown: false}}
         />
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
         <Stack.Screen
           name = "DriverTabs"
           component = {DriverTabs}

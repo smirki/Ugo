@@ -257,14 +257,7 @@ const HomeScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.replace('DriverTabs')}>
-          <Ionicons name="menu" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('SettingsScreen')}>
-          <View style={styles.iconWrapper}>
-            <Ionicons name="settings" size={24} color="black" />
-          </View>
-        </TouchableOpacity>
+        
       </View>
       <Text style={styles.title}>Find a Driver</Text>
       <View style={styles.searchBar}>
