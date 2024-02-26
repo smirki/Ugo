@@ -6,12 +6,12 @@ const Onboarding = ({ navigation }) => {
     <View style={styles.container}>
       {/* Icons and illustrations here */}
       <View style={styles.iconsContainer}>
-        <Image style={styles.icon} source={require('../assets/favicon.png')} />
-        <Image style={styles.icon} source={require('../assets/favicon.png')} />
-        <Image style={styles.icon} source={require('../assets/favicon.png')} />
+        <Image style={styles.icon} source={require('../../assets/favicon.png')} />
+        <Image style={styles.icon} source={require('../../assets/favicon.png')} />
+        <Image style={styles.icon} source={require('../../assets/favicon.png')} />
       </View>
       <View style={styles.circle}>
-        <Image style={styles.carImage} source={require('../assets/logo.png')} />
+        <Image style={styles.carImage} source={require('../../assets/logo.png')} />
       </View>
       <Text style={styles.headerText}>Welcome to Ugo</Text>
       <Text style={styles.subHeaderText}>

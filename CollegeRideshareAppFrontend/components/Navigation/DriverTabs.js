@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import DriverScreen from '../DriverScreen';
+import DriverScreen from '../Driver/DriverScreen.js';
 
 const DriverTab = createBottomTabNavigator();
 

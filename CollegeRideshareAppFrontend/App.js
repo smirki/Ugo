@@ -5,14 +5,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 //components
-import HomeScreen from './components/HomeScreen.js';
-import Onboarding from './components/OnboardingScreen.js';
-import ProfileScreen from './components/ProfileScreen.js';
-import SettingsScreen from './components/SettingsScreen';
-import RideConfirmation  from './components/RideConfirmation.js';
-import MapScreen from './components/MapScreen.js'
-import NotificationsScreen from './components/NotificationScreen.js'
-import DriverScreen from './components/DriverScreen.js';
+import HomeScreen from './components/Rider/HomeScreen.js';
+import Onboarding from './components/Onboarding/OnboardingScreen.js';
+import ProfileScreen from './components/Rider/ProfileScreen.js';
+import SettingsScreen from './components/Rider/SettingsScreen.js';
+import RideConfirmation  from './components/Rider/RideConfirmation.js';
+import MapScreen from './components/Rider/MapScreen.js'
+import NotificationsScreen from './components/Rider/NotificationScreen.js'
+import DriverScreen from './components/Driver/DriverScreen.js';
 
 //navigation componenents
 import DriverTabs from './components/Navigation/DriverTabs.js'

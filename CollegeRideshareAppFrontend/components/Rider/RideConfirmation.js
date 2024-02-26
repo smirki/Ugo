@@ -11,7 +11,7 @@ const RideConfirmation = ({ route }) => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/car.webp')} // Replace with your image path
+        source={require('../../assets/car.webp')} // Replace with your image path
         style={styles.topImage}
       />
       <Text style={styles.headerText}>Book Your Ride</Text>

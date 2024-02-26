@@ -20,7 +20,7 @@ const ProfileScreen = () => {
       <Text style={styles.subHeader}>To Ensure the safety of everyone on this platform</Text>
       <View style={styles.avatarContainer}>
         {/* Placeholder for avatar, implement image picker if needed */}
-        <Image style={styles.avatar} source={require('../assets/favicon.png')} />
+        <Image style={styles.avatar} source={require('../../assets/favicon.png')} />
       </View>
       <TextInput
         style={styles.input}
