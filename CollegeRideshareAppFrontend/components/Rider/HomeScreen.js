@@ -9,7 +9,8 @@ import {
   FlatList,
   SafeAreaView,
   Animated,
-  Button
+  Button,
+  ScrollView
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 
@@ -176,11 +177,18 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         padding: 5,
       },
+      profilePic: {
+        width: 50,
+        height: 50,
+        borderRadius: 25, // Makes it circular
+      },
+      userName: {
+        marginLeft: 10,
+        fontWeight: 'bold',
+      },
       filtersContainer: {
-        flexDirection: 'row',
-    flexWrap: 'wrap', // This allows the filter tags to wrap to the next line
     justifyContent: 'center',
-    paddingVertical: 10,
+    paddingHorizontal: 10,
       },
       filterTag: {
         backgroundColor: '#f0f0f0',
@@ -208,6 +216,11 @@ const HomeScreen = ({ navigation }) => {
       pickupAddress: 'Pickup Address Here or Get User Address', 
       destinationAddress: item.title,
     });
+  };
+
+  const userProfile = {
+    name: 'Jane Doe',
+    profilePic: 'https://via.placeholder.com/150', // Placeholder image URL
   };
 
     // State for search input
@@ -256,8 +269,10 @@ const HomeScreen = ({ navigation }) => {
   
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.topBar}>
-        
+      <View style={styles.topBar}>
+        <Image source={{ uri: userProfile.profilePic }} style={styles.profilePic} />
+        <Text style={styles.userName}>{userProfile.name}</Text>
+        {/* Other elements in the top bar */}
       </View>
       <Text style={styles.title}>Find a Driver</Text>
       <View style={styles.searchBar}>
@@ -271,23 +286,29 @@ const HomeScreen = ({ navigation }) => {
           <Ionicons name="options" size={24} color="white" />
         </TouchableOpacity>
       </View>
-        <Text style={styles.sectionHeader}>Popular Destinations</Text>
-        <View style={styles.filtersContainer}>
-        {['All', 'Nightlife', 'Grocery', 'Party', 'Frat', 'Venue', 'Bar', 'Brewery'].map(renderFilterTag)}
-      </View>
-      <FlatList
-        data={filteredData}
-        renderItem={renderDestination}
-        keyExtractor={item => item.key}
-        numColumns={2}
-      />
-        <TouchableOpacity style={styles.goButtonLarge} onPress = {() =>
-      navigation.navigate('RideConfirmation')
-    }>
-          <Text style={styles.goButtonTextLarge}>GO</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  };
+      <Text style={styles.sectionHeader}>Popular Destinations</Text>
+      <ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={[styles.filtersContainer, { justifyContent: 'center' }]} // Moved justifyContent here
+  style={{ flexGrow: 0 }} // If you have other styles that should still apply to the ScrollView itself
+>
+  {['All', 'Nightlife', 'Grocery', 'Party', 'Frat', 'Venue', 'Bar', 'Brewery'].map(renderFilterTag)}
+</ScrollView>
+<FlatList
+  data={filteredData}
+  renderItem={renderDestination}
+  keyExtractor={item => item.key}
+  numColumns={2}
+  nestedScrollEnabled // Enable nested scrolling
+/>
 
+      <TouchableOpacity style={styles.goButtonLarge} onPress={() =>
+        navigation.navigate('RideConfirmation')
+      }>
+        <Text style={styles.goButtonTextLarge}>GO</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+};
   export default HomeScreen;
