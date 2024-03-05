@@ -1,24 +1,24 @@
 import * as React from 'react';
-import { StyleSheet, Text, View, Image, Button} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
-//components
+// Import screens
 import HomeScreen from './components/Rider/HomeScreen.js';
 import Onboarding from './components/Onboarding/OnboardingScreen.js';
 import ProfileScreen from './components/Rider/ProfileScreen.js';
 import SettingsScreen from './components/Rider/SettingsScreen.js';
 import RideConfirmation  from './components/Rider/RideConfirmation.js';
-import MapScreen from './components/Rider/MapScreen.js'
-import NotificationsScreen from './components/Rider/NotificationScreen.js'
+import MapScreen from './components/Rider/MapScreen.js';
+import NotificationsScreen from './components/Rider/NotificationScreen.js';
 import DriverScreen from './components/Driver/DriverScreen.js';
-
-//navigation componenents
-import DriverTabs from './components/Navigation/DriverTabs.js'
+// Import navigation components
+import DriverTabs from './components/Navigation/DriverTabs.js';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+const Drawer = createDrawerNavigator();
 
 function HomeTabs() {
   return (
@@ -37,7 +37,7 @@ function HomeTabs() {
             iconName = focused ? 'settings' : 'settings';
           }
 
-          // You can return any component that you like here!
+          //return components here
           return <Ionicons name={iconName} size={size} color={color} />;
         },"tabBarActiveTintColor": "#FECC4C",
         "tabBarInactiveTintColor": "#676767",
@@ -56,49 +56,142 @@ function HomeTabs() {
     </Tab.Navigator>
   );
 }
+function DrawerNavigator() {
+  return (
+    <Drawer.Navigator initialRouteName="HomeTabs">
+      <Drawer.Screen name="HomeTabs" component={HomeTabs} options={{ drawerLabel: 'Home' , headerShown: false }} />
+      <Drawer.Screen name="ProfileScreen" component={ProfileScreen} options={{ drawerLabel: 'Profile' }} />
+    </Drawer.Navigator>
+  );
+}
 
 function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {/* The initial route will be the OnboardingScreen */}
         <Stack.Screen
           name="Onboarding"
           component={Onboarding}
           options={{ headerShown: false }}
         />
-        {/* Once the onboarding is completed, the HomeTabs will be shown */}
+        {/* Replace HomeTabs with DrawerNavigator */}
         <Stack.Screen
-          name="HomeTabs"
-          component={HomeTabs}
+          name="DrawerNavigator"
+          component={DrawerNavigator}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="RideConfirmation"
-          component={RideConfirmation}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="SettingsScreen"
-          component={SettingsScreen}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="DriverScreen"
-          component={DriverScreen}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-        <Stack.Screen
-          name = "DriverTabs"
-          component = {DriverTabs}
-          options = {{headerShown: false}}
-        />
+        {/* Keep other Stack screens as is */}
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
-
-
 export default App;
+
+
+// import * as React from 'react';
+// import { StyleSheet, Text, View, Image, Button} from 'react-native';
+// import { NavigationContainer } from '@react-navigation/native';
+// import { createNativeStackNavigator } from '@react-navigation/native-stack';
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+// import { Ionicons } from '@expo/vector-icons';
+// import { createDrawerNavigator } from '@react-navigation/drawer';
+// //components
+// import HomeScreen from './components/Rider/HomeScreen.js';
+// import Onboarding from './components/Onboarding/OnboardingScreen.js';
+// import ProfileScreen from './components/Rider/ProfileScreen.js';
+// import SettingsScreen from './components/Rider/SettingsScreen.js';
+// import RideConfirmation  from './components/Rider/RideConfirmation.js';
+// import MapScreen from './components/Rider/MapScreen.js'
+// import NotificationsScreen from './components/Rider/NotificationScreen.js'
+// import DriverScreen from './components/Driver/DriverScreen.js';
+
+// //navigation componenents
+// import DriverTabs from './components/Navigation/DriverTabs.js'
+
+// const Stack = createNativeStackNavigator();
+// const Tab = createBottomTabNavigator();
+// const Drawer = createDrawerNavigator();
+
+// function HomeTabs() {
+//   return (
+//     <Tab.Navigator
+//       screenOptions={({ route }) => ({
+//         tabBarIcon: ({ focused, color, size }) => {
+//           let iconName;
+
+//           if (route.name === 'Home') {
+//             iconName = focused ? 'home' : 'home';
+//           } else if (route.name === 'Notifications') {
+//             iconName = focused ? 'notifications' : 'notifications';
+//           } else if (route.name === 'Map') {
+//             iconName = focused ? 'map' : 'map';
+//           } else if (route.name === 'Settings') {
+//             iconName = focused ? 'settings' : 'settings';
+//           }
+
+//           //return components here
+//           return <Ionicons name={iconName} size={size} color={color} />;
+//         },"tabBarActiveTintColor": "#FECC4C",
+//         "tabBarInactiveTintColor": "#676767",
+//         "tabBarStyle": [
+//           {
+//             "display": "flex"
+//           },
+//           null
+//         ]
+//       })}
+//     >
+//       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
+//       <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }}/>
+//       <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }}/>
+//       <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }}/>
+//     </Tab.Navigator>
+//   );
+// }
+
+// function App() {
+//   return (
+//     <NavigationContainer>
+//       <Stack.Navigator>
+//         {/* onboarding screen will be the first route*/}
+//         <Stack.Screen
+//           name="Onboarding"
+//           component={Onboarding}
+//           options={{ headerShown: false }}
+//         />
+//         {/* Once the onboarding is completed, the HomeTabs will be shown */}
+//         <Stack.Screen
+//           name="HomeTabs"
+//           component={HomeTabs}
+//           options={{ headerShown: false }}
+//         />
+//         <Stack.Screen
+//           name="RideConfirmation"
+//           component={RideConfirmation}
+//           options={{headerShown: false}}
+//         />
+//         <Stack.Screen
+//           name="SettingsScreen"
+//           component={SettingsScreen}
+//           options={{headerShown: false}}
+//         />
+//         <Stack.Screen
+//           name="DriverScreen"
+//           component={DriverScreen}
+//           options={{headerShown: false}}
+//         />
+//         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+//         <Stack.Screen
+//           name = "DriverTabs"
+//           component = {DriverTabs}
+//           options = {{headerShown: false}}
+//         />
+//       </Stack.Navigator>
+//     </NavigationContainer>
+//   );
+// }
+
+
+
+// export default App;
