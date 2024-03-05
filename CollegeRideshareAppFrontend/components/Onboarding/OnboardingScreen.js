@@ -11,7 +11,7 @@ const Onboarding = ({ navigation }) => {
         <Image style={styles.icon} source={require('../../assets/favicon.png')} />
       </View>
       <View style={styles.circle}>
-        <Image style={styles.carImage} source={require('../../assets/logo.png')} />
+        <Image style={styles.carImage} source={require('../../assets/ugoicon.png')} />
       </View>
       <Text style={styles.headerText}>Welcome to Ugo</Text>
       <Text style={styles.subHeaderText}>
@@ -56,10 +56,10 @@ const styles = StyleSheet.create({
   carImage: {
     // Adjust the size as needed based on your icon's aspect ratio
     width: 100,
-    height: 50,
+    height: 100,
   },
   headerText: {
-    fontSize: 110,
+    fontSize: 50,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,

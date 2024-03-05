@@ -59,8 +59,8 @@ function HomeTabs() {
 function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="HomeTabs">
-      <Drawer.Screen name="HomeTabs" component={HomeTabs} options={{ drawerLabel: 'Home' , headerShown: false }} />
-      <Drawer.Screen name="ProfileScreen" component={ProfileScreen} options={{ drawerLabel: 'Profile' }} />
+      <Drawer.Screen name="HomeTabs" component={HomeTabs} options={{ drawerLabel: 'Rider' , headerShown: false }} />
+      <Drawer.Screen name="DriverScreen" component={DriverTabs} options={{ drawerLabel: 'Driver', headerShown: false  }} />
     </Drawer.Navigator>
   );
 }

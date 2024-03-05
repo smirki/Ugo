@@ -46,7 +46,7 @@ const data = [
 
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
+      flex: 2,
       backgroundColor: '#F5F5F5',
       paddingHorizontal: 100,
       marginHorizontal: 18
@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
       },
       filterButton: {
         
+        
       },searchBar: {
         flexDirection: 'row',
         paddingHorizontal: 10,
@@ -187,15 +188,16 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
       },
       filtersContainer: {
-    justifyContent: 'center',
-    paddingHorizontal: 10,
+        paddingHorizontal: 10,
+        flexWrap: 'wrap', // Allows tags to wrap to the next line
       },
+      
       filterTag: {
         backgroundColor: '#f0f0f0',
         borderRadius: 20,
-        paddingVertical: 8,
         paddingHorizontal: 20,
-        marginHorizontal: 5,
+        paddingVertical: 8,
+        margin: 5, // Adds more space around each tag
       },
       activeFilterTag: {
         backgroundColor: '#FECC4C', // Change color for active state
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
 
 const HomeScreen = ({ navigation }) => {
   const handlePressGo = (item) => {
-    navigation.navigate('RideConfirmation', {
+    navigation.navigate('Map', {
       pickupAddress: 'Pickup Address Here or Get User Address', 
       destinationAddress: item.title,
     });
