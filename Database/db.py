@@ -1,15 +1,16 @@
 # database connection
 import os
-from supabase import create_client, Client
+from flask import Flask
+from pymongo import MongoClient
 from dotenv import load_dotenv
+from __main__ import app
+
 
 
 load_dotenv()
 
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
+uri = os.getenv("MONGODB_URI") 
+client = MongoClient(uri)
 
-def test_response():
-    response = supabase.table('users').select("*").execute()
-    return response
+
+db = client['UgoRideshare']
