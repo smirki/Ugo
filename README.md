@@ -1,4 +1,4 @@
-[![logo](https://github.com/smirki/Ugo/blob/dev/frontend/CollegeRideshareAppFr](https://github.com/smirki/Ugo/blob/dev/frontend/assets/ugoicon.png)ontend/assets/logo.png)
+![logo](https://github.com/smirki/Ugo/blob/dev/frontend/CollegeRideshareAppFr](https://github.com/smirki/Ugo/blob/dev/frontend/assets/ugoicon.png)ontend/assets/logo.png)
 Ugo - College Rideshare App
 ===========================
 
