@@ -209,9 +209,13 @@ const styles = StyleSheet.create({
 
   const HomeScreen = ({ navigation }) => {
     const handlePressGo = (item) => {
+      
       navigation.navigate('Map', {
-        pickupAddress: 'Pickup Address Here or Get User Address',
-        destinationAddress: item.title,
+        initialDestination: {
+          latitude: 35.239380,
+          longitude: -80.8444919,
+          label: 'Charlotte, NC',
+        },
       });
     };
   

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Dimensions, Animated } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Dimensions, Animated, Vibration } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
+import * as Haptics from 'expo-haptics';
 
 const DriverScreen = ({ navigation }) => {
   const [isOnline, setIsOnline] = useState(false);
@@ -27,23 +28,25 @@ const DriverScreen = ({ navigation }) => {
   useEffect(() => {
     // Show the ride request after 1 second and hide it after 10 seconds
     setTimeout(() => setRideRequest({ ...rideRequest, visible: true }), 1000);
-    //setTimeout(() => setRideRequest({ ...rideRequest, visible: false }), 11000);
+    setTimeout(() => setRideRequest({ ...rideRequest, visible: false }), 11000);
   }, []);
 
   const toggleOnlineStatus = () => {
-    setTimeout(() => setRideRequest({ ...rideRequest, visible: true }), 1000);
-    //setTimeout(() => setRideRequest({ ...rideRequest, visible: false }), 11000);
     setIsOnline(current => !current);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  const acceptRide = () => {
-    // Logic to accept the ride
-    setRideRequest({ ...rideRequest, visible: false });
-  };
-
-  const dismissRide = () => {
-    // Logic to dismiss the ride
-    setRideRequest({ ...rideRequest, visible: false });
+  const handleRideRequest = (action) => {
+    Vibration.vibrate();
+    if (action === 'accept') {
+      // Logic to accept the ride
+      setRideRequest({ ...rideRequest, visible: false });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } else {
+      // Logic to reject the ride
+      setRideRequest({ ...rideRequest, visible: false });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
   };
 
   return (
@@ -51,6 +54,8 @@ const DriverScreen = ({ navigation }) => {
       <MapView
         style={styles.map}
         initialRegion={currentLocation}
+        accessibilityElementsHidden={isOnline} // Hide map elements when online
+        importantForAccessibility={isOnline ? 'no-hide-descendants' : 'auto'}
       >
         <Marker coordinate={currentLocation} />
       </MapView>
@@ -61,15 +66,27 @@ const DriverScreen = ({ navigation }) => {
         ref={bottomSheetRef}
         index={0}
         snapPoints={snapPoints}
+        accessibilityElementsHidden={!isOnline} // Hide bottom sheet when offline
+        importantForAccessibility={isOnline ? 'auto' : 'no-hide-descendants'}
       >
         {/* Bottom sheet content here */}
       </BottomSheet>
       {isOnline ? (
-        <TouchableOpacity style={styles.goButton} onPress={toggleOnlineStatus}>
+        <TouchableOpacity
+          style={[styles.goButton, styles.goButtonActive]}
+          onPress={toggleOnlineStatus}
+          accessibilityRole="button"
+          accessibilityLabel="You're Online. Tap to go offline."
+        >
           <Text style={styles.goButtonText}>You're Online!</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity style={styles.goButton} onPress={toggleOnlineStatus}>
+        <TouchableOpacity
+          style={styles.goButton}
+          onPress={toggleOnlineStatus}
+          accessibilityRole="button"
+          accessibilityLabel="Tap to go online."
+        >
           <Ionicons name="home" size={24} color="black" />
           <Text style={styles.goButtonText}>Go</Text>
         </TouchableOpacity>
@@ -82,24 +99,44 @@ const DriverScreen = ({ navigation }) => {
             <Text style={styles.rideRequestText}>{rideRequest.duration}</Text>
           </View>
           <View style={styles.rideRequestActions}>
-            <TouchableOpacity style={styles.acceptButton} onPress={acceptRide}>
+            <TouchableOpacity
+              style={styles.acceptButton}
+              onPress={() => handleRideRequest('accept')}
+              accessibilityRole="button"
+              accessibilityLabel="Accept ride request"
+            >
               <MaterialIcons name="check" size={24} color="white" />
               <Text style={styles.buttonText}>Accept</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.dismissButton} onPress={dismissRide}>
+            <TouchableOpacity
+              style={styles.dismissButton}
+              onPress={() => handleRideRequest('reject')}
+              accessibilityRole="button"
+              accessibilityLabel="Reject ride request"
+            >
               <MaterialIcons name="close" size={24} color="white" />
-              <Text style={styles.buttonText}>Dismiss</Text>
+              <Text style={styles.buttonText}>Reject</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
+      <TouchableOpacity
+        style={[styles.startRideButton, isOnline && styles.startRideButtonActive]}
+        onPress={() => {}}
+        disabled={!isOnline}
+        accessibilityRole="button"
+        accessibilityLabel={isOnline ? "Start a Ride" : "Go online to start a ride"}
+      >
+        <MaterialIcons name="drive-eta" size={24} color={isOnline ? 'white' : 'gray'} />
+        <Text style={[styles.startRideButtonText, !isOnline && styles.startRideButtonTextInactive]}>
+          Start a Ride
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  // ... other styles here ...
-
   container: {
     flex: 1,
   },
@@ -107,70 +144,15 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
   },
-  menuButton: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    backgroundColor: '#0008',
-    padding: 10,
-    borderRadius: 50,
-  },
-  earningsSummary: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    backgroundColor: '#0008',
-    padding: 10,
-    borderRadius: 20,
-  },
-  statusToggle: {
-    position: 'absolute',
-    bottom: 100, // Adjust based on bottom sheet size
-    right: 20,
-    backgroundColor: '#fff',
-    padding: 5,
-    borderRadius: 20,
-  },
-  rideRequestCard: {
-    position: 'absolute',
-    bottom: 150, // Adjust accordingly
-    left: 20,
-    right: 20,
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    elevation: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rideRequestActions: {
-    flexDirection: 'row',
-    marginTop: 10,
-  },
-  acceptButton: {
-    backgroundColor: 'green',
-    marginRight: 10,
-    padding: 10,
-    borderRadius: 5,
-  },
-  denyButton: {
-    backgroundColor: 'red',
-    padding: 10,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: '#fff',
-  },
-
   earningsContainer: {
     position: 'absolute',
-    top: 48, // Adjust to match your status bar height
+    top: 48,
     left: 20,
     backgroundColor: 'white',
     padding: 8,
     borderRadius: 18,
-    elevation: 5, // Shadow for Android
-    shadowColor: '#000', // Shadow for iOS
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -180,7 +162,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   goButton: {
-    // Styles for the 'Go' button or 'You're Online!' indicator
     position: 'absolute',
     bottom: 25,
     left: 20,
@@ -191,11 +172,18 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 30,
     elevation: 5,
-    // Add shadow styles for iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  goButtonActive: {
+    backgroundColor: '#4CAF50',
   },
   goButtonText: {
     fontSize: 18,
     marginLeft: 8,
+    color: 'black',
   },
   rideRequestContainer: {
     position: 'absolute',
@@ -205,7 +193,10 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     elevation: 5,
-    // Add shadow styles for iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   rideRequestDetails: {
     marginBottom: 12,
@@ -240,7 +231,33 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontWeight: 'bold',
   },
-  // ... other styles you may need ...
+  startRideButton: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 30,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  startRideButtonActive: {
+    backgroundColor: '#4CAF50',
+  },
+  startRideButtonText: {
+    fontSize: 18,
+    marginLeft: 8,
+    color: 'black',
+  },
+  startRideButtonTextInactive: {
+    color: 'gray',
+  },
 });
 
 export default DriverScreen;
