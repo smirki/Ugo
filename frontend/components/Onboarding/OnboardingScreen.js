@@ -19,7 +19,7 @@ const Onboarding = ({ navigation }) => {
       </Text>
       <TouchableOpacity
         style={styles.getStartedButton}
-        onPress={() => navigation.replace('DrawerNavigator')}
+        onPress={() => navigation.replace('Signup')}
       >
         <Text style={styles.getStartedButtonText}>Get Started</Text>
       </TouchableOpacity>
