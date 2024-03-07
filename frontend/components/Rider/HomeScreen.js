@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   {user && (
     <>
       <Image source={{ uri: user.profilePic }} style={styles.profilePic} />
-      <Text style={styles.userName}>{user.name}</Text>
+      <Text style={styles.userName}>{user.firstName}</Text>
     </>
   )}
 </View>

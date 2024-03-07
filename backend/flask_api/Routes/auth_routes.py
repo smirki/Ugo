@@ -33,6 +33,7 @@ def get_user(current_user):
         'lastName': current_user.get('lastName', ''),
         'phone': current_user.get('phone', '')
     }
+    print(user_data)
     return jsonify({'user': user_data}), 200
 
 @app.route('/register', methods=['POST'])
