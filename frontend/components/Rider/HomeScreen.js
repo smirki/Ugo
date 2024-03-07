@@ -1,17 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  FlatList,
-  SafeAreaView,
-  Animated,
-  Button,
-  ScrollView
-} from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, FlatList, SafeAreaView, Animated, ScrollView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 
 // Dummy data for the flat list
@@ -45,52 +33,58 @@ const data = [
 ]; 
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 2,
-      backgroundColor: '#F5F5F5',
-      paddingHorizontal: 100,
-      marginHorizontal: 18
-    },
-    topBar: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingHorizontal: 10,
-      alignItems: 'center',
-      marginTop: 10,
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      alignSelf: 'flex-start',
-      marginLeft: 10,
-      marginTop: 10,
-    },
-    searchInput: {
-      height: 40,
-      marginVertical: 10,
-      borderWidth: 1,
-      padding: 10,
-      borderRadius: 20,
-      borderColor: '#ddd',
-      backgroundColor: '#f9f9f9',
-    },
-    sectionHeader: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginLeft: 10,
-      marginVertical: 10,
-    },
-    columnWrapper: {
-      justifyContent: 'space-between',
-      marginBottom: 10,
-    },
-    destinationCard: {
-      backgroundColor: 'white', borderRadius: 10,
-      padding: 15,
-      margin: 5,
-      alignItems: 'center',
-      width: '48%', // approximately half of the screen width minus margin
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 20,
+    marginHorizontal: 18,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    paddingHorizontal: 10,
+  },
+  filterButton: {
+    backgroundColor: '#FFCC00',
+    borderRadius: 15,
+    padding: 10,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  destinationCard: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    margin: 5,
+    alignItems: 'center',
+    width: '48%',
+  },
     destinationImage: {
       width: '100%',
       height: 120,
@@ -188,64 +182,49 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
       },
       filtersContainer: {
-        paddingHorizontal: 10,
-        flexWrap: 'wrap', // Allows tags to wrap to the next line
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginBottom: 20,
       },
-      
       filterTag: {
         backgroundColor: '#f0f0f0',
         borderRadius: 20,
-        paddingHorizontal: 20,
+        paddingHorizontal: 15,
         paddingVertical: 8,
-        margin: 5, // Adds more space around each tag
+        margin: 5,
       },
       activeFilterTag: {
-        backgroundColor: '#FECC4C', // Change color for active state
+        backgroundColor: '#FECC4C',
         color: 'white',
       },
       filterTagText: {
-        color: 'black',
+        fontSize: 16,
+        fontWeight: 'bold',
       },
-  });
-
-
-  
-  
-
-const HomeScreen = ({ navigation }) => {
-  const handlePressGo = (item) => {
-    navigation.navigate('Map', {
-      pickupAddress: 'Pickup Address Here or Get User Address', 
-      destinationAddress: item.title,
     });
-  };
 
-  const userProfile = {
-    name: 'Jane Doe',
-    profilePic: 'https://via.placeholder.com/150', // Placeholder image URL
-  };
 
-    // State for search input
+  
+  
 
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
-  // Animated value for the search input width
-  const searchWidth = useRef(new Animated.Value(200)).current;
-
-  const filteredData = data.filter(item => 
-    activeCategory === 'All' || item.category === activeCategory
-  );
-    
-    const animateSearchBar = () => {
-        // Animate the width of the search bar
-        Animated.timing(searchWidth, {
-          toValue: 300, // Adjust the value to the width you want
-          duration: 400,
-          useNativeDriver: false, // width is not supported by native driver
-        }).start();
-      };
-    
-    // Function to render each destination card
+  const HomeScreen = ({ navigation }) => {
+    const handlePressGo = (item) => {
+      navigation.navigate('Map', {
+        pickupAddress: 'Pickup Address Here or Get User Address',
+        destinationAddress: item.title,
+      });
+    };
+  
+    const userProfile = {
+      name: 'Jane Doe',
+      profilePic: 'https://via.placeholder.com/150',
+    };
+  
+    const [search, setSearch] = useState('');
+    const [activeCategory, setActiveCategory] = useState('All');
+  
+    const filteredData = data.filter((item) => activeCategory === 'All' || item.category === activeCategory);
+  
     const renderDestination = ({ item }) => (
       <View style={styles.destinationCard}>
         <View style={[styles.destinationImage, { backgroundColor: item.backgroundColor }]}>
@@ -258,7 +237,7 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
     );
-
+  
     const renderFilterTag = (category) => (
       <TouchableOpacity
         key={category}
@@ -271,46 +250,37 @@ const HomeScreen = ({ navigation }) => {
   
     return (
       <SafeAreaView style={styles.container}>
-      <View style={styles.topBar}>
-        <Image source={{ uri: userProfile.profilePic }} style={styles.profilePic} />
-        <Text style={styles.userName}>{userProfile.name}</Text>
-        {/* Other elements in the top bar */}
-      </View>
-      <Text style={styles.title}>Find a Driver</Text>
-      <View style={styles.searchBar}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search Events..."
-          onChangeText={setSearch}
-          value={search}
+        <View style={styles.topBar}>
+          <Image source={{ uri: userProfile.profilePic }} style={styles.profilePic} />
+          <Text style={styles.userName}>{userProfile.name}</Text>
+        </View>
+        <Text style={styles.title}>Find a Driver</Text>
+        <View style={styles.searchBar}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search Events..."
+            onChangeText={setSearch}
+            value={search}
+          />
+          <TouchableOpacity style={styles.filterButton} onPress={() => {}}>
+            <Ionicons name="options" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.sectionHeader}>Popular Destinations</Text>
+        <View style={styles.filtersContainer}>
+          {['All', 'Nightlife', 'Grocery', 'Party', 'Frat', 'Venue', 'Bar', 'Brewery'].map(renderFilterTag)}
+        </View>
+        <FlatList
+          data={filteredData}
+          renderItem={renderDestination}
+          keyExtractor={(item) => item.key}
+          numColumns={2}
+          nestedScrollEnabled
         />
-        <TouchableOpacity style={styles.filterButton} onPress={() => {}}>
-          <Ionicons name="options" size={24} color="white" />
+        <TouchableOpacity style={styles.goButtonLarge} onPress={() => navigation.navigate('RideConfirmation')}>
+          <Text style={styles.goButtonTextLarge}>GO</Text>
         </TouchableOpacity>
-      </View>
-      <Text style={styles.sectionHeader}>Popular Destinations</Text>
-      <ScrollView
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  contentContainerStyle={[styles.filtersContainer, { justifyContent: 'center' }]} // Moved justifyContent here
-  style={{ flexGrow: 0 }} // If you have other styles that should still apply to the ScrollView itself
->
-  {['All', 'Nightlife', 'Grocery', 'Party', 'Frat', 'Venue', 'Bar', 'Brewery'].map(renderFilterTag)}
-</ScrollView>
-<FlatList
-  data={filteredData}
-  renderItem={renderDestination}
-  keyExtractor={item => item.key}
-  numColumns={2}
-  nestedScrollEnabled // Enable nested scrolling
-/>
-
-      <TouchableOpacity style={styles.goButtonLarge} onPress={() =>
-        navigation.navigate('RideConfirmation')
-      }>
-        <Text style={styles.goButtonTextLarge}>GO</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
-  );
-};
+      </SafeAreaView>
+    );
+  };
   export default HomeScreen;
