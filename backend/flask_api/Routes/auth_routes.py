@@ -1,6 +1,4 @@
-#each file contains routes related to different features of the app
-
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from flask import request, jsonify
 from Database.db import db
@@ -8,53 +6,71 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from __main__ import app
 import jwt
 from functools import wraps
-## have to enable JWT authentication
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.args.get('token')
-
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(' ')[1]
         if not token:
-            return jsonify({'message': 'Token is missing!'})
-
+            return jsonify({'message': 'Token is missing!'}), 401
         try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = db.Users.find_one({'email': data['user']})
         except:
-            return jsonify({'message': 'Token is invalid'})
-        return f(*args, **kwargs)
+            return jsonify({'message': 'Token is invalid!'}), 401
+        return f(current_user, *args, **kwargs)
     return decorated
 
+@app.route('/user', methods=['GET'])
+@token_required
+def get_user(current_user):
+    user_data = {
+        'id': str(current_user['_id']),
+        'email': current_user['email'],
+        'firstName': current_user.get('firstName', ''),
+        'lastName': current_user.get('lastName', ''),
+        'phone': current_user.get('phone', '')
+    }
+    return jsonify({'user': user_data}), 200
 
 @app.route('/register', methods=['POST'])
 def register():
     email = request.json['email']
     password = request.json['password']
+    firstName = request.json['firstName']
+    lastName = request.json['lastName']
+    phone = request.json['phone']
     if 'edu' in email:
-        
         if db.Users.find_one({'email': email}):
             return jsonify({'error': 'User already exists'}), 409
-        
-    
         hashed_password = generate_password_hash(password)
-        print(hashed_password)
-        
-        db.Users.insert_one({'email': email, 'password': hashed_password})
-        return jsonify({'message': 'User registered successfully!'}), 200
-        
+        db.Users.insert_one({
+            'email': email,
+            'password': hashed_password,
+            'firstName': firstName,
+            'lastName': lastName,
+            'phone': phone
+        })
+        token = jwt.encode({'user': email, 'exp': datetime.utcnow() + timedelta(minutes=30)}, app.config['SECRET_KEY'], algorithm="HS256")
+        return jsonify({"token": token}), 200
     else:
         return jsonify({'error': 'Not a school email'}), 400
-    
+
 @app.route('/login', methods=['POST'])
 def login():
     email = request.json['email']
     password = request.json['password']
-
-    user = db.Users.find_one({'email':email})
-
+    user = db.Users.find_one({'email': email})
     if user and check_password_hash(user['password'], password):
-        token = jwt.encode({'user': email, 'exp' : datetime.datetimenow.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
-        # return jsonify({'message': 'User Logged in Successfully!'}), 200
-        return jsonify({"token": token})
-    else: 
+        token = jwt.encode({'user': email, 'exp': datetime.utcnow() + timedelta(minutes=30)}, app.config['SECRET_KEY'], algorithm="HS256")
+        return jsonify({"token": token}), 200
+    else:
         return jsonify({'error': 'Invalid login credentials'}), 400
 
+# Protected route example
+@app.route('/protected', methods=['GET'])
+@token_required
+def protected():
+    return jsonify({'message': 'This is a protected route'})

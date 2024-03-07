@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, FlatList, SafeAreaView, Animated, ScrollView } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Dummy data for the flat list
 const data = [
@@ -225,7 +226,46 @@ const styles = StyleSheet.create({
     };
   
     const [search, setSearch] = useState('');
+    const [user, setUser] = useState(null);
     const [activeCategory, setActiveCategory] = useState('All');
+
+    useEffect(() => {
+      fetchUserInfo();
+    }, []);
+
+    const fetchUserInfo = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          // Make a request to your Flask backend to get user information
+          const response = await fetch('http://136.57.131.34:5000/user', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (response.ok) {
+            try {
+              const data = await response.json();
+              setUser(data.user);
+            } catch (error) {
+              console.log('Failed to parse server response:', error);
+              // Handle the case when the server response is not a valid JSON string
+              // You can display an error message to the user or take appropriate action
+            }
+          } else {
+            console.log('Failed to retrieve user information');
+            // Handle error if user information retrieval fails
+            // You can display an error message to the user or take appropriate action
+          }
+        }
+      } catch (error) {
+        console.log('Error:', error);
+        // Handle network or other errors
+        // You can display an error message to the user or take appropriate action
+      }
+    };
+  
   
     const filteredData = data.filter((item) => activeCategory === 'All' || item.category === activeCategory);
   
@@ -255,9 +295,13 @@ const styles = StyleSheet.create({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.topBar}>
-          <Image source={{ uri: userProfile.profilePic }} style={styles.profilePic} />
-          <Text style={styles.userName}>{userProfile.name}</Text>
-        </View>
+  {user && (
+    <>
+      <Image source={{ uri: user.profilePic }} style={styles.profilePic} />
+      <Text style={styles.userName}>{user.name}</Text>
+    </>
+  )}
+</View>
         <Text style={styles.title}>Find a Driver</Text>
         <View style={styles.searchBar}>
           <TextInput

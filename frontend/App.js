@@ -14,6 +14,7 @@ import MapScreen from './components/Rider/MapScreen.js';
 import NotificationsScreen from './components/Rider/NotificationScreen.js';
 import DriverScreen from './components/Driver/DriverScreen.js';
 import SignupScreen from './components/Onboarding/SignUp.js';
+import LoginScreen from './components/Onboarding/LoginScreen.js';
 // Import navigation components
 import DriverTabs from './components/Navigation/DriverTabs.js';
 
@@ -76,6 +77,7 @@ function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen name="Signup" component={SignupScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
         {/* Replace HomeTabs with DrawerNavigator */}
         <Stack.Screen
           name="DrawerNavigator"

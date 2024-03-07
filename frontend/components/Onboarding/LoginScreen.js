@@ -3,16 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { Ionicons, Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SignUpScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignup = () => {
-    fetch('http://136.57.131.34:5000/register', {
+  const handleLogin = () => {
+    fetch('http://136.57.131.34:5000/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,9 +17,6 @@ const SignUpScreen = ({ navigation }) => {
       body: JSON.stringify({
         email,
         password,
-        firstName,
-        lastName,
-        phone,
       }),
     })
       .then((response) => response.json())
@@ -31,12 +25,12 @@ const SignUpScreen = ({ navigation }) => {
           // Store the JWT token in AsyncStorage
           AsyncStorage.setItem('token', data.token)
             .then(() => {
-              // Navigate to the desired screen after successful signup
+              // Navigate to the desired screen after successful login
               navigation.navigate('DrawerNavigator');
             });
         } else {
-          // Handle signup error
-          console.log('Signup error:', data.error);
+          // Handle login error
+          console.log('Login error:', data.error);
         }
       })
       .catch((error) => {
@@ -56,27 +50,7 @@ const SignUpScreen = ({ navigation }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.headerContainer}>
-          <Text style={styles.headerText}>Create Account</Text>
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Ionicons name="person-outline" size={24} color="gray" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="First Name"
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Ionicons name="person-outline" size={24} color="gray" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Last Name"
-            value={lastName}
-            onChangeText={setLastName}
-          />
+          <Text style={styles.headerText}>Login</Text>
         </View>
 
         <View style={styles.inputContainer}>
@@ -87,17 +61,6 @@ const SignUpScreen = ({ navigation }) => {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Ionicons name="call-outline" size={24} color="gray" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Phone Number"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
           />
         </View>
 
@@ -119,12 +82,12 @@ const SignUpScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.signUpButton} onPress={handleSignup}>
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.loginText}>Already have an account? Login</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+          <Text style={styles.signUpText}>Don't have an account? Sign Up</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -189,4 +152,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignUpScreen;
+export default LoginScreen;
