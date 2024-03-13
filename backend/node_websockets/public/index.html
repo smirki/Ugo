@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ride Request Testing</title>
+  <style>
+    .driver {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Ride Request Testing</h2>
+  <div>
+    <h3>Drivers</h3>
+    <div id="drivers"></div>
+    <button onclick="registerDriver(1)">Register as Driver 1</button>
+    <button onclick="registerDriver(2)">Register as Driver 2</button>
+    <button onclick="registerDriver(3)">Register as Driver 3</button>
+    <button onclick="registerDriver(4)">Register as Driver 4</button>
+  </div>
+  <div>
+    <h3>Riders</h3>
+    <button onclick="requestRide(1)">Request Ride as Rider 1</button>
+    <button onclick="requestRide(2)">Request Ride as Rider 2</button>
+    <button onclick="requestRide(3)">Request Ride as Rider 3</button>
+    <button onclick="requestRide(4)">Request Ride as Rider 4</button>
+  </div>
+
+  <script>
+    var socket = new WebSocket('ws://localhost:3000');
+    let currentDriverId = '';
+
+    function registerDriver(id) {
+      currentDriverId = id;
+      const message = { type: 'register_driver', id: id.toString(), location: { lat: Math.random() * 100, long: Math.random() * 100 } };
+      socket.send(JSON.stringify(message));
+    }
+
+    function requestRide(riderId) {
+      const message = {
+        type: 'ride_request',
+        riderId: riderId.toString(),
+        location: { lat: Math.random() * 100, long: Math.random() * 100 },
+        destination: { lat: Math.random() * 100, long: Math.random() * 100 }
+      };
+      socket.send(JSON.stringify(message));
+    }
+
+    function acceptRide(requestId) {
+      socket.send(JSON.stringify({ type: 'accept_ride', requestId, driverId: currentDriverId }));
+    }
+
+    function declineRide(requestId) {
+      socket.send(JSON.stringify({ type: 'decline_ride', requestId, driverId: currentDriverId }));
+    }
+
+    socket.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      console.log('Message from server:', data);
+
+      if (data.type === 'new_ride_request' && data.driverId === currentDriverId.toString()) {
+        const requestId = data.requestId;
+        const message = `New ride request for Driver ${currentDriverId}. Accept?`;
+        if (confirm(message)) {
+          acceptRide(requestId);
+        } else {
+          declineRide(requestId);
+        }
+      } else if (data.type === 'ride_accepted') {
+        alert(`Your ride has been accepted by Driver ${data.driverId}!`);
+      } else if (data.type === 'no_driver_available') {
+        alert('No drivers available for your request.');
+      } else if (data.type === 'drivers_update') {
+        updateDriversDisplay(data.drivers);
+      }
+    }
+
+    function updateDriversDisplay(drivers) {
+      const driversDiv = document.getElementById('drivers');
+      driversDiv.innerHTML = '';
+      drivers.forEach(driver => {
+        const driverDiv = document.createElement('div');
+        driverDiv.className = 'driver';
+        const availabilityButton = document.createElement('button');
+        availabilityButton.textContent = driver.status === 'available' ? 'Available' : 'Not Available';
+        availabilityButton.onclick = function() {
+          toggleDriverAvailability(driver._id);
+        };
+        driverDiv.textContent = `Driver ${driver._id}: `;
+        driverDiv.appendChild(availabilityButton);
+        driversDiv.appendChild(driverDiv);
+      });
+    }
+
+    function toggleDriverAvailability(driverId) {
+      socket.send(JSON.stringify({ type: 'toggle_availability', driverId: driverId }));
+    }
+  </script>
+</body>
+</html>
