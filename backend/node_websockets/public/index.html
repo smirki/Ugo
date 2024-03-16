@@ -1,101 +1,132 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Ride Request Testing</title>
-  <style>
-    .driver {
-      margin-bottom: 10px;
-    }
-  </style>
+  <title>Ride Request App</title>
 </head>
 <body>
-  <h2>Ride Request Testing</h2>
+  <h1>Ride Request App</h1>
   <div>
-    <h3>Drivers</h3>
-    <div id="drivers"></div>
-    <button onclick="registerDriver(1)">Register as Driver 1</button>
-    <button onclick="registerDriver(2)">Register as Driver 2</button>
-    <button onclick="registerDriver(3)">Register as Driver 3</button>
-    <button onclick="registerDriver(4)">Register as Driver 4</button>
+    <label for="role">Select Role:</label>
+    <select id="role">
+      <option value="driver">Driver</option>
+      <option value="rider">Rider</option>
+    </select>
+    <button id="joinButton">Join</button>
   </div>
-  <div>
-    <h3>Riders</h3>
-    <button onclick="requestRide(1)">Request Ride as Rider 1</button>
-    <button onclick="requestRide(2)">Request Ride as Rider 2</button>
-    <button onclick="requestRide(3)">Request Ride as Rider 3</button>
-    <button onclick="requestRide(4)">Request Ride as Rider 4</button>
+  <div id="riderSection" style="display: none;">
+    <button id="requestButton">Request Ride</button>
+    <div id="rideStatus"></div>
+  </div>
+  <div id="driverSection" style="display: none;">
+    <div id="rideRequest"></div>
+    <button id="acceptButton" style="display: none;">Accept Ride</button>
+    <button id="declineButton" style="display: none;">Decline Ride</button>
+  </div>
+
+  <div id="userLists">
+    <h2>User Lists</h2>
+    <div>
+      <h3>Drivers:</h3>
+      <ul id="driverList"></ul>
+    </div>
+    <div>
+      <h3>Riders:</h3>
+      <ul id="riderList"></ul>
+    </div>
   </div>
 
   <script>
-    var socket = new WebSocket('ws://localhost:3000');
-    let currentDriverId = '';
+    const ws = new WebSocket('ws://localhost:3000');
+    let userId;
+    let currentRiderId;
 
-    function registerDriver(id) {
-      currentDriverId = id;
-      const message = { type: 'register_driver', id: id.toString(), location: { lat: Math.random() * 100, long: Math.random() * 100 } };
-      socket.send(JSON.stringify(message));
-    }
+    ws.onopen = () => {
+      console.log('Connected to server');
+    };
 
-    function requestRide(riderId) {
-      const message = {
-        type: 'ride_request',
-        riderId: riderId.toString(),
-        location: { lat: Math.random() * 100, long: Math.random() * 100 },
-        destination: { lat: Math.random() * 100, long: Math.random() * 100 }
-      };
-      socket.send(JSON.stringify(message));
-    }
-
-    function acceptRide(requestId) {
-      socket.send(JSON.stringify({ type: 'accept_ride', requestId, driverId: currentDriverId }));
-    }
-
-    function declineRide(requestId) {
-      socket.send(JSON.stringify({ type: 'decline_ride', requestId, driverId: currentDriverId }));
-    }
-
-    socket.onmessage = function(event) {
+    ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log('Message from server:', data);
 
-      if (data.type === 'new_ride_request' && data.driverId === currentDriverId.toString()) {
-        const requestId = data.requestId;
-        const message = `New ride request for Driver ${currentDriverId}. Accept?`;
-        if (confirm(message)) {
-          acceptRide(requestId);
-        } else {
-          declineRide(requestId);
-        }
-      } else if (data.type === 'ride_accepted') {
-        alert(`Your ride has been accepted by Driver ${data.driverId}!`);
-      } else if (data.type === 'no_driver_available') {
-        alert('No drivers available for your request.');
-      } else if (data.type === 'drivers_update') {
-        updateDriversDisplay(data.drivers);
+      if (data.type === 'userLists') {
+      updateUserLists(data.drivers, data.riders);
+    }
+
+      if (data.type === 'rideRequest') {
+        currentRiderId = data.riderId;
+        document.getElementById('rideRequest').textContent = `Ride request from Rider ${data.riderId}`;
+        document.getElementById('acceptButton').style.display = 'inline';
+        document.getElementById('declineButton').style.display = 'inline';
+      } else if (data.type === 'rideAccepted') {
+        document.getElementById('rideStatus').textContent = `Driver ${data.driverId} accepted your ride request`;
+      } else if (data.type === 'noDriversAvailable') {
+        document.getEleme
+        
+        ntById('rideStatus').textContent = 'No drivers available at the moment';
       }
-    }
+    };
 
-    function updateDriversDisplay(drivers) {
-      const driversDiv = document.getElementById('drivers');
-      driversDiv.innerHTML = '';
-      drivers.forEach(driver => {
-        const driverDiv = document.createElement('div');
-        driverDiv.className = 'driver';
-        const availabilityButton = document.createElement('button');
-        availabilityButton.textContent = driver.status === 'available' ? 'Available' : 'Not Available';
-        availabilityButton.onclick = function() {
-          toggleDriverAvailability(driver._id);
-        };
-        driverDiv.textContent = `Driver ${driver._id}: `;
-        driverDiv.appendChild(availabilityButton);
-        driversDiv.appendChild(driverDiv);
-      });
-    }
+    document.getElementById('joinButton').addEventListener('click', () => {
+      const role = document.getElementById('role').value;
+      userId = Math.random().toString(36).substr(2, 9);
 
-    function toggleDriverAvailability(driverId) {
-      socket.send(JSON.stringify({ type: 'toggle_availability', driverId: driverId }));
+      ws.send(JSON.stringify({ type: 'join', role, id: userId }));
+
+      if (role === 'driver') {
+        document.getElementById('driverSection').style.display = 'block';
+      } else if (role === 'rider') {
+        document.getElementById('riderSection').style.display = 'block';
+      }
+    });
+
+    document.getElementById('requestButton').addEventListener('click', () => {
+      ws.send(JSON.stringify({ type: 'requestRide', id: userId }));
+    });
+
+    document.getElementById('acceptButton').addEventListener('click', () => {
+      ws.send(JSON.stringify({ type: 'acceptRide', driverId: userId, riderId: currentRiderId }));
+      document.getElementById('rideRequest').textContent = '';
+      document.getElementById('acceptButton').style.display = 'none';
+      document.getElementById('declineButton').style.display = 'none';
+    });
+
+    document.getElementById('declineButton').addEventListener('click', () => {
+      ws.send(JSON.stringify({ type: 'declineRide', driverId: userId, riderId: currentRiderId }));
+      document.getElementById('rideRequest').textContent = '';
+      document.getElementById('acceptButton').style.display = 'none';
+      document.getElementById('declineButton').style.display = 'none';
+    });
+    function updateUserLists(drivers, riders) {
+    const driverList = document.getElementById('driverList');
+    const riderList = document.getElementById('riderList');
+
+    driverList.innerHTML = '';
+    riderList.innerHTML = '';
+
+    drivers.forEach((driver) => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${driver.id} (${getStatusText(driver.status)})`;
+      driverList.appendChild(listItem);
+    });
+
+    riders.forEach((rider) => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${rider.id} (${getStatusText(rider.status)})`;
+      riderList.appendChild(listItem);
+    });
+  }
+
+  function getStatusText(status) {
+    switch (status) {
+      case 'available':
+        return 'Available';
+      case 'busy':
+        return 'Busy';
+      case 'choosing':
+        return 'Choosing a Ride';
+      default:
+        return '';
     }
-  </script>
+  }
+</script>
 </body>
 </html>
