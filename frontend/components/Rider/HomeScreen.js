@@ -5,15 +5,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Dummy data for the flat list
 const data = [
-  { key: '1', title: 'AvidXchange Music Factory', time: '9 PM EST', backgroundColor: '#EBF8EE', category: 'Nightlife' },
-  { key: '2', title: 'Bojangles Coliseum', time: '8 PM EST', backgroundColor: '#FD4E26', category: 'Nightlife' },
-  { key: '3', title: 'Ink n Ivy', time: '10 PM EST', backgroundColor: '#EBF8EE' },
-  { key: '4', title: 'Merchant & Trade', time: '7 PM EST', backgroundColor: '#FD4E26' },
-  { key: '5', title: 'Middle C Jazz', time: '6 PM EST', backgroundColor: '#EBF8EE' },
-  { key: '6', title: 'Nuvole Rooftop TwentyTwo', time: '8 PM EST', backgroundColor: '#FD4E26' },
-  { key: '7', title: 'Ovens Auditorium', time: '9 PM EST', backgroundColor: '#EBF8EE' },
-  { key: '8', title: 'Petra\'s', time: '10 PM EST', backgroundColor: '#FD4E26' },
-  { key: '9', title: 'Pinhouse', time: '11 AM EST', backgroundColor: '#EBF8EE' },
+  { key: '1', title: 'AvidXchange Music Factory', time: '9 PM EST', backgroundColor: '#EBF8EE', category: 'Nightlife', latitude: 35.2401, longitude: -80.8451 },
+  { key: '2', title: 'Bojangles Coliseum', time: '8 PM EST', backgroundColor: '#FD4E26', category: 'Nightlife', latitude: 35.2079, longitude: -80.7997 },
+  { key: '3', title: 'Ink n Ivy', time: '10 PM EST', backgroundColor: '#EBF8EE', latitude: 35.2274, longitude: -80.8443 },
+  { key: '4', title: 'Merchant & Trade', time: '7 PM EST', backgroundColor: '#FD4E26', latitude: 35.2279, longitude: -80.8433 },
+  { key: '5', title: 'Middle C Jazz', time: '6 PM EST', backgroundColor: '#EBF8EE', latitude: 35.2215, longitude: -80.8457 },
+  { key: '6', title: 'Nuvole Rooftop TwentyTwo', time: '8 PM EST', backgroundColor: '#FD4E26', latitude: 35.2278, longitude: -80.8431 },
+  { key: '7', title: 'Ovens Auditorium', time: '9 PM EST', backgroundColor: '#EBF8EE', latitude: 35.2083, longitude: -80.7934 },
+  { key: '8', title: 'Petra\'s', time: '10 PM EST', backgroundColor: '#FD4E26', latitude: 35.2204, longitude: -80.8128 },
+  { key: '9', title: 'Pinhouse', time: '11 AM EST', backgroundColor: '#EBF8EE', latitude: 35.2099, longitude: -80.8126 },
+  { key: '10', title: 'PNC Music Pavilion', time: '8 PM EST', backgroundColor: '#FD4E26', latitude: 35.3354, longitude: -80.7328 },
   { key: '10', title: 'PNC Music Pavilion', time: '8 PM EST', backgroundColor: '#FD4E26' },
   { key: '11', title: 'Puttery', time: '7 PM EST', backgroundColor: '#EBF8EE' },
   { key: '12', title: 'Skyla Credit Union Amphitheatre', time: '9 PM EST', backgroundColor: '#FD4E26' },
@@ -210,20 +211,21 @@ const styles = StyleSheet.create({
 
   const HomeScreen = ({ navigation }) => {
     const handlePressGo = (item) => {
-      
       navigation.navigate('Map', {
         initialDestination: {
-          latitude: 35.239380,
-          longitude: -80.8444919,
-          label: 'Charlotte, NC',
+          latitude: item.latitude,
+          longitude: item.longitude,
+          label: item.title,
         },
       });
     };
+    
   
     const userProfile = {
       name: 'Jane Doe',
       profilePic: 'https://via.placeholder.com/150',
     };
+    
   
     const [search, setSearch] = useState('');
     const [user, setUser] = useState(null);
@@ -238,7 +240,7 @@ const styles = StyleSheet.create({
         const token = await AsyncStorage.getItem('token');
         if (token) {
           // Make a request to your Flask backend to get user information
-          const response = await fetch('http://136.57.131.34:5000/user', {
+          const response = await fetch('https://test.saipriya.org/user', {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -273,6 +275,7 @@ const styles = StyleSheet.create({
       <View style={styles.destinationCard}>
         <View style={[styles.destinationImage, { backgroundColor: item.backgroundColor }]}>
           {/* Replace with Image component if necessary */}
+          
         </View>
         <Text style={styles.destinationTitle}>{item.title}</Text>
         <Text style={styles.destinationTime}>{item.time}</Text>
@@ -295,13 +298,15 @@ const styles = StyleSheet.create({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.topBar}>
-  {user && (
-    <>
-      <Image source={{ uri: user.profilePic }} style={styles.profilePic} />
-      <Text style={styles.userName}>{user.firstName}</Text>
-    </>
-  )}
-</View>
+        {user ? (
+          <>
+            <Image source={{ uri: user.profilePic }} style={styles.profilePic} />
+            <Text style={styles.userName}>{user.firstName}</Text>
+          </>
+        ) : (
+          <Text style={styles.userName}>Loading user...</Text>
+        )}
+      </View>
         <Text style={styles.title}>Find a Driver</Text>
         <View style={styles.searchBar}>
           <TextInput

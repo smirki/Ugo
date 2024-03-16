@@ -77,7 +77,7 @@ const MapScreen = ({ navigation, route }) => {
     }
     try {
       const response = await fetch(
-        `http://136.57.131.34:4000/v1/autocomplete?text=${encodeURIComponent(
+        `https://pelias.saipriya.org/v1/autocomplete?text=${encodeURIComponent(
           query
         )}&focus.point.lat=35.25&focus.point.lon=-80.85`
       );
@@ -113,7 +113,7 @@ const MapScreen = ({ navigation, route }) => {
       return;
     }
 
-    const url = `http://136.57.131.34:8080/ors/v2/directions/driving-car?start=${pickupLocation.longitude},${pickupLocation.latitude}&end=${destinationLocation.longitude},${destinationLocation.latitude}`;
+    const url = `https://routing.saipriya.org/ors/v2/directions/driving-car?start=${pickupLocation.longitude},${pickupLocation.latitude}&end=${destinationLocation.longitude},${destinationLocation.latitude}`;
     try {
       const response = await fetch(url);
       const data = await response.json();
