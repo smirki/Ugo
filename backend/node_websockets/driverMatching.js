@@ -1,97 +1,101 @@
-const WebSocket = require('ws');
 const express = require('express');
 const http = require('http');
+const WebSocket = require('ws');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const drivers = new Map(); // Store drivers as {id: socket, location, status}
-const ridersQueue = []; // Queue of ride requests from riders
-let requestIdCounter = 1; // Counter for generating unique request IDs
+let drivers = [];
+let riders = [];
+
+app.use(express.static('public'));
 
 wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     const data = JSON.parse(message);
 
-    switch (data.type) {
-      case 'register_driver':
-        drivers.set(data.id, { socket: ws, location: data.location, status: 'available' });
-        ws.send(JSON.stringify({ type: 'driver_registered', id: data.id })); // Confirm registration
-        break;
-      case 'ride_request':
-        const requestId = requestIdCounter++; // Generate a unique request ID
-        ridersQueue.push({ ...data, requestId, socket: ws }); // Add requestId to the ride request
-        findDriverForRider();
-        break;
-      case 'accept_ride':
-        notifyRider(data.requestId, true);
-        break;
-      case 'decline_ride':
-        notifyRider(data.requestId, false);
-        findDriverForRider();
-        break;
-    }
-  });
-});
-
-function findDriverForRider() {
-  if (ridersQueue.length === 0) return;
-
-  let closestDriver = null;
-  let minDistance = Number.MAX_VALUE;
-  const riderRequest = ridersQueue[0]; // Always try to serve the first rider in queue
-
-  drivers.forEach((value, key) => {
-    if (value.status === 'available') {
-      const distance = calculateDistance(riderRequest.location, value.location);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestDriver = key;
+    if (data.type === 'join') {
+      if (data.role === 'driver') {
+        drivers.push({ id: data.id, ws, status: 'available' });
+      } else if (data.role === 'rider') {
+        riders.push({ id: data.id, ws, status: 'available' });
+      }
+      broadcastUserLists();
+    } else if (data.type === 'requestRide') {
+      const rider = riders.find((r) => r.id === data.id);
+      if (rider) {
+        rider.status = 'busy';
+        const driversCopy = [...drivers];
+        requestRide(rider, driversCopy);
+        broadcastUserLists();
+      }
+    } else if (data.type === 'acceptRide') {
+      const rider = riders.find((r) => r.id === data.riderId);
+      const driver = drivers.find((d) => d.id === data.driverId);
+      if (rider && driver) {
+        rider.status = 'busy';
+        driver.status = 'busy';
+        rider.ws.send(JSON.stringify({ type: 'rideAccepted', driverId: data.driverId }));
+        broadcastUserLists();
+      }
+    } else if (data.type === 'declineRide') {
+      const rider = riders.find((r) => r.id === data.riderId);
+      if (rider) {
+        const driversCopy = rider.driversCopy.filter((d) => d.id !== data.driverId);
+        if (driversCopy.length > 0) {
+          requestRide(rider, driversCopy);
+        } else {
+          rider.status = 'available';
+          rider.ws.send(JSON.stringify({ type: 'noDriversAvailable' }));
+          broadcastUserLists();
+        }
       }
     }
   });
 
-  if (closestDriver) {
-    drivers.get(closestDriver).socket.send(JSON.stringify({
-      type: 'new_ride_request',
-      requestId: riderRequest.requestId, // Send requestId to the driver
-      location: riderRequest.location,
-      destination: riderRequest.destination,
-      driverId: closestDriver // Include driver ID for confirmation
-    }));
-    drivers.get(closestDriver).status = 'busy'; // Mark driver as busy
-    riderRequest.driverId = closestDriver; // Assign driver to rider request for later reference
+  ws.on('close', () => {
+    drivers = drivers.filter((driver) => driver.ws !== ws);
+    riders = riders.filter((rider) => rider.ws !== ws);
+    broadcastUserLists();
+  });
+});
+
+function requestRide(rider, driversCopy) {
+  rider.driversCopy = driversCopy;
+  const driver = driversCopy[0];
+  if (driver) {
+    driver.status = 'choosing';
+    driver.ws.send(JSON.stringify({ type: 'rideRequest', riderId: rider.id }));
+    broadcastUserLists();
   } else {
-    riderRequest.socket.send(JSON.stringify({ type: 'no_driver_available', requestId: riderRequest.requestId }));
+    rider.status = 'available';
+    rider.ws.send(JSON.stringify({ type: 'noDriversAvailable' }));
+    broadcastUserLists();
   }
 }
 
-function notifyRider(requestId, accepted) {
-  const requestIndex = ridersQueue.findIndex(request => request.requestId === requestId);
-  if (requestIndex === -1) return; // Request not found
-  const riderRequest = ridersQueue.splice(requestIndex, 1)[0]; // Remove the rider request from the queue
-
-  if (accepted) {
-    // Notify the rider directly using the stored socket
-    riderRequest.socket.send(JSON.stringify({ type: 'ride_accepted', requestId, driverId: riderRequest.driverId }));
-    // Update the driver's status to 'enroute'
-    if (drivers.has(riderRequest.driverId)) {
-      drivers.get(riderRequest.driverId).status = 'enroute';
+function broadcastUserLists() {
+  const userLists = {
+    type: 'userLists',
+    drivers: drivers.map((driver) => ({ id: driver.id, status: driver.status })),
+    riders: riders.map((rider) => ({ id: rider.id, status: rider.status })),
+  };
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(userLists));
     }
-  } else {
-    // If declined, make the driver available again and try to find another driver
-    if (drivers.has(riderRequest.driverId)) {
-      drivers.get(riderRequest.driverId).status = 'available';
-    }
-    findDriverForRider();
-  }
+  });
 }
 
-
-function calculateDistance(loc1, loc2) {
-  // Dummy function for distance calculation
-  return Math.sqrt((loc1.lat - loc2.lat) ** 2 + (loc1.long - loc2.long) ** 2);
+function requestRide(rider, driversCopy) {
+  rider.driversCopy = driversCopy;
+  const driver = driversCopy[0];
+  if (driver) {
+    driver.ws.send(JSON.stringify({ type: 'rideRequest', riderId: rider.id }));
+  } else {
+    rider.ws.send(JSON.stringify({ type: 'noDriversAvailable' }));
+  }
 }
 
 server.listen(3000, () => {
