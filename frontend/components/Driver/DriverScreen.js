@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Dimensions, Animated, Vibration } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DriverScreen = ({ navigation }) => {
   const [isOnline, setIsOnline] = useState(false);
@@ -16,6 +17,8 @@ const DriverScreen = ({ navigation }) => {
   });
   const bottomSheetRef = React.useRef(null);
   const snapPoints = React.useMemo(() => ['25%', '50%'], []);
+  const [user, setUser] = useState(null);
+  const ws = useRef(null);
 
   // Dummy current location
   const currentLocation = {
@@ -25,28 +28,120 @@ const DriverScreen = ({ navigation }) => {
     longitudeDelta: 0.0421,
   };
 
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+  
+    if (data.type === 'rideRequest') {
+      const { riderId, pickupLocation, destinationLocation } = data;
+      setRideRequest({
+        visible: true,
+        riderId,
+        pickupLocation,
+        destinationLocation,
+      });
+      Vibration.vibrate();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
+
+  
+
   useEffect(() => {
-    // Show the ride request after 1 second and hide it after 10 seconds
-    setTimeout(() => setRideRequest({ ...rideRequest, visible: true }), 1000);
-    setTimeout(() => setRideRequest({ ...rideRequest, visible: false }), 11000);
+    fetchUserInfo();
+    connectWebSocket();
+
+    return () => {
+      disconnectWebSocket();
+    };
   }, []);
 
+  const fetchUserInfo = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        const response = await fetch('https://test.saipriya.org/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+        } else {
+          console.log('Failed to retrieve user information');
+        }
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
+  };
+
+  const connectWebSocket = () => {
+    ws.current = new WebSocket('wss://matching.saipriya.org');
+
+    ws.current.onopen = () => {
+      console.log('Connected to server');
+    };
+
+    ws.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === 'rideRequest') {
+        const { riderId, pickupLocation, destinationLocation } = data;
+        setRideRequest({
+          visible: true,
+          riderId,
+          pickupLocation,
+          destinationLocation,
+        });
+        Vibration.vibrate();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    };
+
+    ws.current.onclose = () => {
+      console.log('Disconnected from server');
+    };
+  };
+
+  const disconnectWebSocket = () => {
+    if (ws.current) {
+      ws.current.close();
+    }
+  };
   const toggleOnlineStatus = () => {
     setIsOnline(current => !current);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   const handleRideRequest = (action) => {
-    Vibration.vibrate();
     if (action === 'accept') {
-      // Logic to accept the ride
-      setRideRequest({ ...rideRequest, visible: false });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Send ride acceptance to the server
+      const acceptRide = {
+        type: 'acceptRide',
+        driverId: userId, // Assuming the driver's ID is stored in a variable called userId
+        riderId: rideRequest.riderId,
+      };
+      ws.send(JSON.stringify(acceptRide));
+  
+      // Navigate to the DriverRidingScreen
+      navigation.navigate('DriverRiding', {
+        pickupLocation: rideRequest.pickupLocation,
+        destinationLocation: rideRequest.destinationLocation,
+      });
     } else {
-      // Logic to reject the ride
-      setRideRequest({ ...rideRequest, visible: false });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      // Send ride rejection to the server
+      const declineRide = {
+        type: 'declineRide',
+        driverId: userId,
+        riderId: rideRequest.riderId,
+      };
+      ws.send(JSON.stringify(declineRide));
     }
+  
+    setRideRequest({ ...rideRequest, visible: false });
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   return (
@@ -70,8 +165,13 @@ const DriverScreen = ({ navigation }) => {
         importantForAccessibility={isOnline ? 'auto' : 'no-hide-descendants'}
       >
         {/* Bottom sheet content here */}
-      </BottomSheet>
-      {isOnline ? (
+        {user && (
+        <View style={styles.driverInfo}>
+          <Text style={styles.driverName}>{user.name}</Text>
+          {/* Display other driver information */}
+        </View>
+      )}
+        {isOnline ? (
         <TouchableOpacity
           style={[styles.goButton, styles.goButtonActive]}
           onPress={toggleOnlineStatus}
@@ -132,6 +232,8 @@ const DriverScreen = ({ navigation }) => {
           Start a Ride
         </Text>
       </TouchableOpacity>
+      </BottomSheet>
+      
     </View>
   );
 };

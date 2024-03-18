@@ -84,6 +84,7 @@ function App() {
           component={DrawerNavigator}
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="RideConfirmation" component = {RideConfirmation} />
         {/* Keep other Stack screens as is */}
       </Stack.Navigator>
     </NavigationContainer>

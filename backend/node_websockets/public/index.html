@@ -48,10 +48,8 @@
       const data = JSON.parse(event.data);
 
       if (data.type === 'userLists') {
-      updateUserLists(data.drivers, data.riders);
-    }
-
-      if (data.type === 'rideRequest') {
+        updateUserLists(data.drivers, data.riders);
+      } else if (data.type === 'rideRequest') {
         currentRiderId = data.riderId;
         document.getElementById('rideRequest').textContent = `Ride request from Rider ${data.riderId}`;
         document.getElementById('acceptButton').style.display = 'inline';
@@ -59,9 +57,7 @@
       } else if (data.type === 'rideAccepted') {
         document.getElementById('rideStatus').textContent = `Driver ${data.driverId} accepted your ride request`;
       } else if (data.type === 'noDriversAvailable') {
-        document.getEleme
-        
-        ntById('rideStatus').textContent = 'No drivers available at the moment';
+        document.getElementById('rideStatus').textContent = 'No drivers available at the moment';
       }
     };
 
@@ -95,38 +91,39 @@
       document.getElementById('acceptButton').style.display = 'none';
       document.getElementById('declineButton').style.display = 'none';
     });
+
     function updateUserLists(drivers, riders) {
-    const driverList = document.getElementById('driverList');
-    const riderList = document.getElementById('riderList');
+      const driverList = document.getElementById('driverList');
+      const riderList = document.getElementById('riderList');
 
-    driverList.innerHTML = '';
-    riderList.innerHTML = '';
+      driverList.innerHTML = '';
+      riderList.innerHTML = '';
 
-    drivers.forEach((driver) => {
-      const listItem = document.createElement('li');
-      listItem.textContent = `${driver.id} (${getStatusText(driver.status)})`;
-      driverList.appendChild(listItem);
-    });
+      drivers.forEach((driver) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${driver.id} (${getStatusText(driver.status)})`;
+        driverList.appendChild(listItem);
+      });
 
-    riders.forEach((rider) => {
-      const listItem = document.createElement('li');
-      listItem.textContent = `${rider.id} (${getStatusText(rider.status)})`;
-      riderList.appendChild(listItem);
-    });
-  }
-
-  function getStatusText(status) {
-    switch (status) {
-      case 'available':
-        return 'Available';
-      case 'busy':
-        return 'Busy';
-      case 'choosing':
-        return 'Choosing a Ride';
-      default:
-        return '';
+      riders.forEach((rider) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${rider.id} (${getStatusText(rider.status)})`;
+        riderList.appendChild(listItem);
+      });
     }
-  }
-</script>
+
+    function getStatusText(status) {
+      switch (status) {
+        case 'available':
+          return 'Available';
+        case 'busy':
+          return 'Busy';
+        case 'choosing':
+          return 'Choosing a Ride';
+        default:
+          return '';
+      }
+    }
+  </script>
 </body>
 </html>

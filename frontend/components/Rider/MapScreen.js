@@ -12,11 +12,11 @@ import {
   Image,
 } from 'react-native';
 import MapView, { Polyline, Marker } from 'react-native-maps';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 import * as Location from 'expo-location';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MapScreen = ({ navigation, route }) => {
   const [pickupQuery, setPickupQuery] = useState('');
@@ -33,6 +33,8 @@ const MapScreen = ({ navigation, route }) => {
   const { initialDestination } = route.params || {};
 
   const { initialPickupLocation, initialDestinationLocation } = route.params || {};
+  const [user, setUser] = useState(null);
+  const ws = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -68,6 +70,12 @@ const MapScreen = ({ navigation, route }) => {
         fetchRoute(initialDestination);
       }
     })();
+    fetchUserInfo();
+    connectWebSocket();
+
+    return () => {
+      disconnectWebSocket();
+    };
   }, [initialDestination]);
 
   const fetchSuggestions = async (query) => {
@@ -86,6 +94,58 @@ const MapScreen = ({ navigation, route }) => {
     } catch (error) {
       console.error('Failed to fetch suggestions:', error);
       setSuggestions([]);
+    }
+  };
+
+  const fetchUserInfo = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        const response = await fetch('https://test.saipriya.org/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+        } else {
+          console.log('Failed to retrieve user information');
+        }
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
+  };
+
+  const connectWebSocket = () => {
+    ws.current = new WebSocket('wss://matching.saipriya.org');
+
+    ws.current.onopen = () => {
+      console.log('Connected to server');
+    };
+
+    ws.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === 'rideAccepted') {
+        navigation.navigate('Riding', {
+          pickupLocation,
+          destinationLocation,
+          driverLocation: data.driverLocation,
+        });
+      }
+    };
+
+    ws.current.onclose = () => {
+      console.log('Disconnected from server');
+    };
+  };
+
+  const disconnectWebSocket = () => {
+    if (ws.current) {
+      ws.current.close();
     }
   };
 
@@ -149,10 +209,34 @@ const MapScreen = ({ navigation, route }) => {
 
   const handleFindRide = () => {
     if (pickupLocation && destinationLocation) {
-      // Handle find ride logic here
-      console.log('Find ride from:', pickupLocation, 'to:', destinationLocation);
+      if (user && user.id) {
+        // Send ride request to the server
+        const rideRequest = {
+          type: 'requestRide',
+          id: user.id, // Use the user's ID from the fetched user data
+          pickupLocation,
+          destinationLocation,
+        };
+        ws.current.send(JSON.stringify(rideRequest));
+  
+        // Navigate to the RideConfirmationScreen
+        navigation.navigate('RideConfirmation');
+      } else {
+        Alert.alert('User information not available. Please try again later.');
+      }
     } else {
       Alert.alert('Please select both a pickup and destination location.');
+    }
+  };
+
+  const handleClearInput = (field) => {
+    if (field === 'pickup') {
+      setPickupLocation(null);
+      setPickupQuery('');
+    } else if (field === 'destination') {
+      setDestinationLocation(null);
+      setDestinationQuery('');
+      setRouteCoordinates([]);
     }
   };
 
@@ -189,7 +273,7 @@ const MapScreen = ({ navigation, route }) => {
         >
           {routeCoordinates.length > 0 && (
             <>
-              <Polyline coordinates={routeCoordinates} strokeWidth={4} strokeColor="blue" />
+              <Polyline coordinates={routeCoordinates} strokeWidth={4} strokeColor="#007bff" />
               {pickupLocation && (
                 <Marker coordinate={pickupLocation}>
                   <Image
@@ -218,7 +302,7 @@ const MapScreen = ({ navigation, route }) => {
           {userLocation && (
             <Marker coordinate={userLocation}>
               <TouchableOpacity style={styles.userLocationButton} onPress={handleUserLocationPress}>
-                <Ionicons name="location" size={24} color="blue" />
+                <Ionicons name="location" size={24} color="#007bff" />
               </TouchableOpacity>
             </Marker>
           )}
@@ -236,50 +320,75 @@ const MapScreen = ({ navigation, route }) => {
             }
           }}
         >
-          <BottomSheetView style={styles.bottomSheetContent}>
-            <BlurView intensity={100} style={styles.blurView}>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={[styles.input, activeInput === 'pickup' && styles.inputFocused]}
-                  placeholder="Pickup Location"
-                  value={pickupQuery}
-                  onChangeText={(text) => {
-                    setPickupQuery(text);
-                    fetchSuggestions(text);
-                  }}
-                  onFocus={() => {
-                    setActiveInput('pickup');
-                    bottomSheetRef.current.snapToIndex(1);
-                  }}
-                />
-              </View>
+          <View style={styles.bottomSheetContent}>
+          {user && (
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{user.name}</Text>
+            {/* Display other user information */}
+          </View>
+        )}
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, activeInput === 'pickup' && styles.inputFocused]}
+                placeholder="Pickup Location"
+                value={pickupLocation ? pickupLocation.label : pickupQuery}
+                onChangeText={(text) => {
+                  setPickupQuery(text);
+                  fetchSuggestions(text);
+                }}
+                onFocus={() => {
+                  setActiveInput('pickup');
+                  bottomSheetRef.current.snapToIndex(1);
+                }}
+              />
+              {pickupLocation && (
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => handleClearInput('pickup')}
+                >
+                  <Ionicons name="close" size={20} color="gray" />
+                </TouchableOpacity>
+              )}
+              {pickupLocation && pickupLocation.label === 'Current Location' && (
+                <TouchableOpacity style={styles.currentLocationButton}>
+                  <Ionicons name="location" size={20} color="#007bff" />
+                </TouchableOpacity>
+              )}
+            </View>
 
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={[styles.input, activeInput === 'destination' && styles.inputFocused]}
-                  placeholder="Destination Location"
-                  value={destinationQuery}
-                  onChangeText={(text) => {
-                    setDestinationQuery(text);
-                    fetchSuggestions(text);
-                  }}
-                  onFocus={() => {
-                    setActiveInput('destination');
-                    bottomSheetRef.current.snapToIndex(1);
-                  }}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
-                />
-              </View>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, activeInput === 'destination' && styles.inputFocused]}
+                placeholder="Destination Location"
+                value={destinationLocation ? destinationLocation.label : destinationQuery}
+                onChangeText={(text) => {
+                  setDestinationQuery(text);
+                  fetchSuggestions(text);
+                }}
+                onFocus={() => {
+                  setActiveInput('destination');
+                  bottomSheetRef.current.snapToIndex(1);
+                }}
+                onSubmitEditing={() => {
+                  Keyboard.dismiss();
+                }}
+              />
+              {destinationLocation && (
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => handleClearInput('destination')}
+                >
+                  <Ionicons name="close" size={20} color="gray" />
+                </TouchableOpacity>
+              )}
+            </View>
 
-              {activeInput && renderSuggestions()}
+            {activeInput && renderSuggestions()}
 
-              <TouchableOpacity style={styles.findRideButton} onPress={handleFindRide}>
-                <Text style={styles.findRideButtonText}>Find Ride</Text>
-              </TouchableOpacity>
-            </BlurView>
-          </BottomSheetView>
+            <TouchableOpacity style={styles.findRideButton} onPress={handleFindRide}>
+              <Text style={styles.findRideButtonText}>Find Ride</Text>
+            </TouchableOpacity>
+          </View>
         </BottomSheet>
       </View>
     </GestureHandlerRootView>
@@ -289,54 +398,55 @@ const MapScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#F8F9FA',
   },
   map: {
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    flex: 1,
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 16,
     fontSize: 18,
     borderWidth: 1,
-    borderColor: '#ddd',
-    marginVertical: 8,
+    borderColor: '#EDEDED',
   },
   inputFocused: {
-    borderColor: 'blue',
+    borderColor: '#007bff',
   },
   suggestionItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: '#FFFFFF',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: '#EDEDED',
   },
   suggestionText: {
-    fontSize: 18,
+    fontSize: 16,
+    color: '#343A40',
   },
   suggestionsContainer: {
     maxHeight: 200,
   },
   durationMarker: {
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
     padding: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'blue',
+    borderColor: '#007bff',
   },
   durationText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: 'blue',
+    color: '#007bff',
   },
   userLocationButton: {
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 8,
     borderWidth: 1,
-    borderColor: 'blue',
+    borderColor: '#007bff',
   },
   bottomSheet: {
     shadowColor: '#000',
@@ -347,22 +457,35 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  },
-  bottomSheetContent: {
-    flex: 1,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    overflow: 'hidden',
+    backgroundColor: '#F8F9FA',
   },
-  blurView: {
-    flex: 1,
+  bottomSheetContent: {
     padding: 16,
   },
   inputContainer: {
     marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  clearButton: {
+    position: 'absolute',
+    right: 10,
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    padding: 5,
+  },
+  currentLocationButton: {
+    marginLeft: 8,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#007bff',
   },
   findRideButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#007bff',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 10,
@@ -370,7 +493,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   findRideButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: 20,
     fontWeight: 'bold',
   },
