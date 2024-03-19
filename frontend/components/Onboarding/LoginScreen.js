@@ -82,7 +82,7 @@ const LoginScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <TouchableOpacity style={styles.loginButton} onPress={() => {navigation.navigate('DrawerNavigator')}}>
           <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
 
