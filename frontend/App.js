@@ -9,7 +9,7 @@ import HomeScreen from './components/Rider/HomeScreen.js';
 import Onboarding from './components/Onboarding/OnboardingScreen.js';
 import ProfileScreen from './components/Rider/ProfileScreen.js';
 import SettingsScreen from './components/Rider/SettingsScreen.js';
-import RideConfirmation  from './components/Rider/RideConfirmation.js';
+import RideConfirmation from './components/Rider/RideConfirmation.js';
 import MapScreen from './components/Rider/MapScreen.js';
 import NotificationsScreen from './components/Rider/NotificationScreen.js';
 import DriverScreen from './components/Driver/DriverScreen.js';
@@ -17,6 +17,9 @@ import SignupScreen from './components/Onboarding/SignUp.js';
 import LoginScreen from './components/Onboarding/LoginScreen.js';
 // Import navigation components
 import DriverTabs from './components/Navigation/DriverTabs.js';
+
+import { StripeProvider } from '@stripe/stripe-react-native';
+import Payment from './components/Payment/PaymentScreen.js';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,34 +44,60 @@ function HomeTabs() {
 
           //return components here
           return <Ionicons name={iconName} size={size} color={color} />;
-        },"tabBarActiveTintColor": "#FECC4C",
-        "tabBarInactiveTintColor": "#676767",
-        "tabBarStyle": [
+        },
+        tabBarActiveTintColor: '#FECC4C',
+        tabBarInactiveTintColor: '#676767',
+        tabBarStyle: [
           {
-            "display": "flex"
+            display: 'flex',
           },
-          null
-        ]
+          null,
+        ],
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
-      <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }}/>
-      <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }}/>
-      <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }}/>
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="Map"
+        component={MapScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ headerShown: false }}
+      />
     </Tab.Navigator>
   );
 }
 function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="HomeTabs">
-      <Drawer.Screen name="HomeTabs" component={HomeTabs} options={{ drawerLabel: 'Rider' , headerShown: false }} />
-      <Drawer.Screen name="DriverScreen" component={DriverTabs} options={{ drawerLabel: 'Driver', headerShown: false  }} />
+      <Drawer.Screen
+        name="HomeTabs"
+        component={HomeTabs}
+        options={{ drawerLabel: 'Rider', headerShown: false }}
+      />
+      <Drawer.Screen
+        name="DriverScreen"
+        component={DriverTabs}
+        options={{ drawerLabel: 'Driver', headerShown: false }}
+      />
     </Drawer.Navigator>
   );
 }
 
 function App() {
   return (
+    // Your app code here
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
@@ -84,7 +113,7 @@ function App() {
           component={DrawerNavigator}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="RideConfirmation" component = {RideConfirmation} />
+        <Stack.Screen name="RideConfirmation" component={RideConfirmation} />
         {/* Keep other Stack screens as is */}
       </Stack.Navigator>
     </NavigationContainer>
@@ -92,7 +121,6 @@ function App() {
 }
 
 export default App;
-
 
 // import * as React from 'react';
 // import { StyleSheet, Text, View, Image, Button} from 'react-native';
@@ -196,7 +224,5 @@ export default App;
 //     </NavigationContainer>
 //   );
 // }
-
-
 
 // export default App;

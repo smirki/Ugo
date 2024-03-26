@@ -9,7 +9,7 @@ import EarningsScreen from '../Driver/EarningsScreen.js';
 import RatingsScreen from '../Driver/RatingsScreen.js';
 import ProfileScreen from '../Driver/ProfileScreen.js';
 import SupportScreen from '../Driver/SupportScreen.js';
-
+import PaymentScreen from '../Payment/PaymentScreen.js';
 const DriverTab = createBottomTabNavigator();
 
 function DriverTabs() {
@@ -31,6 +31,8 @@ function DriverTabs() {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'Support') {
             iconName = focused ? 'help-circle' : 'help-circle-outline';
+          } else if (route.name == 'Payment') {
+            iconName = focused ? 'card' : 'card-outline';
           }
 
           // You can return any component that you like here!
@@ -40,12 +42,41 @@ function DriverTabs() {
         tabBarInactiveTintColor: 'gray',
       })}
     >
-      <DriverTab.Screen name="DriverHome" component={DriverScreen} options={{ headerShown: false, title: 'Home' }} />
-      <DriverTab.Screen name="RideRequests" component={RideRequestsScreen} options={{ title: 'Rides' }} />
-      <DriverTab.Screen name="Earnings" component={EarningsScreen} options={{ title: 'Earnings' }} />
-      <DriverTab.Screen name="Ratings" component={RatingsScreen} options={{ title: 'Ratings' }} />
-      <DriverTab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
-      <DriverTab.Screen name="Support" component={SupportScreen} options={{ title: 'Support' }} />
+      <DriverTab.Screen
+        name="DriverHome"
+        component={DriverScreen}
+        options={{ headerShown: false, title: 'Home' }}
+      />
+      <DriverTab.Screen
+        name="RideRequests"
+        component={RideRequestsScreen}
+        options={{ title: 'Rides' }}
+      />
+      <DriverTab.Screen
+        name="Earnings"
+        component={EarningsScreen}
+        options={{ title: 'Earnings' }}
+      />
+      <DriverTab.Screen
+        name="Ratings"
+        component={RatingsScreen}
+        options={{ title: 'Ratings' }}
+      />
+      <DriverTab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ title: 'Profile' }}
+      />
+      <DriverTab.Screen
+        name="Support"
+        component={SupportScreen}
+        options={{ title: 'Support' }}
+      />
+      <DriverTab.Screen
+        name="Payment"
+        component={PaymentScreen}
+        options={{ title: 'Payment' }}
+      />
     </DriverTab.Navigator>
   );
 }

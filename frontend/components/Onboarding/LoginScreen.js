@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,34 +18,34 @@ const LoginScreen = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = () => {
-    fetch('https://test.saipriya.org/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.token) {
-          // Store the JWT token in AsyncStorage
-          AsyncStorage.setItem('token', data.token)
-            .then(() => {
-              // Navigate to the desired screen after successful login
-              navigation.navigate('DrawerNavigator');
-            });
-        } else {
-          // Handle login error
-          console.log('Login error:', data.error);
-        }
-      })
-      .catch((error) => {
-        // Handle network or other errors
-        console.log('Error:', error);
-      });
+    navigation.navigate('DrawerNavigator');
+    // fetch('https://test.saipriya.org/login', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     email,
+    //     password,
+    //   }),
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     if (true) {
+    //       // Store the JWT token in AsyncStorage
+    //       AsyncStorage.setItem('token', data.token).then(() => {
+    //         // Navigate to the desired screen after successful login
+
+    //       });
+    //     } else {
+    //       // Handle login error
+    //       console.log('Login error:', data.error);
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     // Handle network or other errors
+    //     console.log('Error:', error);
+    //   });
   };
 
   const toggleShowPassword = () => {
@@ -54,7 +63,12 @@ const LoginScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Ionicons name="mail-outline" size={24} color="gray" style={styles.icon} />
+          <Ionicons
+            name="mail-outline"
+            size={24}
+            color="gray"
+            style={styles.icon}
+          />
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -65,7 +79,12 @@ const LoginScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={24} color="gray" style={styles.icon} />
+          <Ionicons
+            name="lock-closed-outline"
+            size={24}
+            color="gray"
+            style={styles.icon}
+          />
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -73,7 +92,10 @@ const LoginScreen = ({ navigation }) => {
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
           />
-          <TouchableOpacity style={styles.showPasswordButton} onPress={toggleShowPassword}>
+          <TouchableOpacity
+            style={styles.showPasswordButton}
+            onPress={toggleShowPassword}
+          >
             <Feather
               name={showPassword ? 'eye-off' : 'eye'}
               size={24}
