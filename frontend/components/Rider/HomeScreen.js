@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
         const token = await AsyncStorage.getItem('token');
         if (token) {
           // Make a request to your Flask backend to get user information
-          const response = await fetch('https://test.saipriya.org/user', {
+          const response = await fetch('https://login.saipriya.org/user', {
             headers: {
               'Authorization': `Bearer ${token}`,
             },

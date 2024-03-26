@@ -59,7 +59,7 @@ const DriverScreen = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
-        const response = await fetch('https://test.saipriya.org/user', {
+        const response = await fetch('https://login.saipriya.org/user', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

@@ -1,57 +1,78 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
+import io from 'socket.io-client';
 
 const RideConfirmationScreen = () => {
-  const [user, setUser] = useState(null);
+  const [drivers, setDrivers] = useState([]);
+  const [riders, setRiders] = useState([]);
+  const socketRef = useRef(null);
+
+  if (!socketRef.current) {
+    socketRef.current = io('https://matching.saipriya.org');
+  }
 
   useEffect(() => {
-    fetchUserInfo();
+    const socket = socketRef.current;
+
+    console.log('RideConfirmationScreen mounted.');
+
+    socket.on('connect', () => {
+      console.log(`Connected to server with socket ID: ${socket.id}`);
+    });
+
+    socket.on('update', (data) => {
+      console.log('Update received:', data);
+      setDrivers(data.drivers || []);
+      setRiders(data.riders || []);
+    });
+
+    socket.on('disconnect', () => {
+      console.log(`Disconnected from server with socket ID: ${socket.id}`);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.log(`Connection error: ${error}`);
+    });
+
+    return () => {
+      console.log('RideConfirmationScreen will unmount, disconnecting socket.');
+      socket.disconnect();
+    };
   }, []);
-
-  const fetchUserInfo = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (token) {
-        const response = await fetch('https://test.saipriya.org/user', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        } else {
-          console.log('Failed to retrieve user information');
-        }
-      }
-    } catch (error) {
-      console.log('Error:', error);
-    }
-  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Finding a driver...</Text>
-      {user && (
-        <Text style={styles.userInfo}>Ride requested by {user.name}</Text>
-      )}
-      <ActivityIndicator size="large" color="#007bff" />
+      <Text style={styles.heading}>Drivers:</Text>
+      <FlatList
+        data={drivers}
+        keyExtractor={(item) => item.driverId}
+        renderItem={({ item }) => (
+          <Text>{item.driverId} - {item.available ? 'Available' : 'Busy'}</Text>
+        )}
+      />
+      <Text style={styles.heading}>Riders:</Text>
+      <FlatList
+        data={riders}
+        keyExtractor={(item) => item.riderId}
+        renderItem={({ item }) => (
+          <Text>{item.riderId}</Text>
+        )}
+      />
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    paddingHorizontal: 20,
+    paddingVertical: 30,
   },
-  text: {
+  heading: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginTop: 20,
+    marginBottom: 10,
   },
 });
 

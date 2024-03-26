@@ -1,112 +1,211 @@
 const express = require('express');
 const http = require('http');
-const WebSocket = require('ws');
+const socketIo = require('socket.io');
+const mongoose = require('mongoose');
 const cors = require('cors');
+
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-
-let drivers = [];
-let riders = [];
+const io = socketIo(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
 
 app.use(cors());
+
+mongoose.connect('mongodb+srv://manavmaj2001:pEUHcpVLkrUys5VP@ugocluser.qv3ihnu.mongodb.net/UgoCluser?retryWrites=true&w=majority', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).catch((error) => {
+  console.error('Error connecting to MongoDB:', error);
+});
+
+const rideSchema = new mongoose.Schema({
+  riderId: String,
+  driverId: String,
+  status: String,
+});
+
+const Ride = mongoose.model('Ride', rideSchema);
+
+const activeDriverSchema = new mongoose.Schema({
+  driverId: String,
+  available: Boolean,
+});
+
+const riderSchema = new mongoose.Schema({
+  riderId: String,
+});
+
+const ActiveDriver = mongoose.model('ActiveDriver', activeDriverSchema);
+const Rider = mongoose.model('Rider', riderSchema);
+
 app.use(express.static('public'));
 
-const verifyToken = (token) => {
-  // Implement your token verification logic here
-  // Return true if the token is valid, false otherwise
-  // You can use JWT or any other token verification method
-  return true;
-};
+io.on('connection', (socket) => {
+  console.log('New client connected:', socket.id);
+  console.log(`New client connected with ID: ${socket.id} on ${new Date().toISOString()}`);
 
-wss.on('connection', (ws) => {
-  console.log('New connection established');
-  
-  ws.on('message', (message) => {
-    const data = JSON.parse(message);
-    console.log('Received message:', data);
-
-    // Verify token before processing the request
-    if (data.token && verifyToken(data.token)) {
-      if (data.type === 'join') {
-        if (data.role === 'driver') {
-          drivers.push({ id: data.id, ws, status: 'available' });
-          console.log(`Driver ${data.id} joined`);
-        } else if (data.role === 'rider') {
-          riders.push({ id: data.id, ws, status: 'available' });
-          console.log(`Rider ${data.id} joined`);
-        }
-        broadcastUserLists();
-      } else if (data.type === 'requestRide') {
-        let rider = riders.find((r) => r.id === data.id);
-        if (!rider) {
-          rider = { id: data.id, ws, status: 'available' };
-          riders.push(rider);
-          console.log(`New rider ${data.id} joined and requested a ride`);
-          broadcastUserLists(); // Broadcast updated user lists after creating a new rider
-        }
-        rider.status = 'busy';
-        const driversCopy = [...drivers];
-        requestRide(rider, driversCopy);
-        console.log(`Ride requested by rider ${rider.id}`);
-        broadcastUserLists();
-      } else if (data.type === 'declineRide') {
-        const rider = riders.find((r) => r.id === data.riderId);
-        if (rider) {
-          const driversCopy = rider.driversCopy.filter((d) => d.id !== data.driverId);
-          if (driversCopy.length > 0) {
-            requestRide(rider, driversCopy);
-          } else {
-            rider.status = 'available';
-            rider.ws.send(JSON.stringify({ type: 'noDriversAvailable' }));
-            console.log(`Ride declined by all drivers for rider ${rider.id}`);
-            broadcastUserLists();
-          }
-        }
+  socket.on('register', async (data) => {
+    console.log(`Register event received from ${socket.id}:`, data);
+    try {
+      if (data.type === 'driver') {
+        await ActiveDriver.create({ driverId: socket.id, available: false });
+      } else if (data.type === 'rider') {
+        await Rider.create({ riderId: socket.id });
       }
+      const drivers = await ActiveDriver.find();
+      const riders = await Rider.find();
+      io.emit('update', { drivers, riders });
+    } catch (error) {
+      console.error('Error registering user:', error);
     }
   });
 
-  ws.on('close', () => {
-    drivers = drivers.filter((driver) => driver.ws !== ws);
-    riders = riders.filter((rider) => rider.ws !== ws);
-    console.log('Connection closed');
-    broadcastUserLists();
+  socket.on('setAvailability', async (available) => {
+    try {
+      await ActiveDriver.findOneAndUpdate({ driverId: socket.id }, { available });
+      const drivers = await ActiveDriver.find();
+      io.emit('update', { drivers });
+    } catch (error) {
+      console.error('Error setting driver availability:', error);
+    }
+  });
+
+  socket.on('requestRide', async (data) => {
+    try {
+      const ride = await Ride.create({
+        riderId: data.userId,
+        status: 'pending',
+      });
+      io.emit('rideRequested', ride);
+    } catch (error) {
+      console.error('Error requesting ride:', error);
+    }
+  });
+
+  socket.on('rideResponse', async (data) => {
+    try {
+      if (data.accepted) {
+        await ActiveDriver.findOneAndUpdate({ driverId: socket.id }, { available: false });
+        io.to(data.riderId).emit('rideAccepted', { driverId: socket.id });
+      } else {
+        const nextDriver = await findNextAvailableDriver(socket.id);
+        if (nextDriver) {
+          io.to(nextDriver.driverId).emit('rideRequested', { riderId: data.riderId });
+        } else {
+          io.to(data.riderId).emit('rideDeclined');
+        }
+      }
+      const drivers = await ActiveDriver.find();
+      const riders = await Rider.find();
+      io.emit('update', { drivers, riders });
+    } catch (error) {
+      console.error('Error responding to ride request:', error);
+    }
+  });
+
+  socket.on('disconnect', async () => {
+    console.log(`Client with ID: ${socket.id} disconnected on ${new Date().toISOString()}`);
+    console.log('Client disconnected:', socket.id);
+    try {
+      await ActiveDriver.findOneAndDelete({ driverId: socket.id });
+      await Rider.findOneAndDelete({ riderId: socket.id });
+      const drivers = await ActiveDriver.find();
+      const riders = await Rider.find();
+      
+      io.emit('update', { drivers, riders });
+    } catch (error) {
+      console.error('Error removing user on disconnect:', error);
+    }
+  });
+  socket.on('requestRide', async (data) => {
+    try {
+      const ride = await Ride.create({
+        riderId: data.userId,
+        status: 'pending',
+      });
+      io.emit('rideRequested', ride);
+    } catch (error) {
+      console.error('Error requesting ride:', error);
+    }
+  });
+  socket.on('rideRequested', async (data) => {
+    try {
+      const availableDriver = await ActiveDriver.findOne({ available: true });
+      if (availableDriver) {
+        io.to(availableDriver.driverId).emit('rideRequested', { riderId: data.userId });
+      } else {
+        io.to(data.userId).emit('rideDeclined');
+      }
+    } catch (error) {
+      console.error('Error requesting ride:', error);
+    }
+  });
+
+  
+
+  socket.on('completeRide', async () => {
+    try {
+      await ActiveDriver.findOneAndUpdate({ driverId: socket.id }, { available: true });
+      io.emit('update', { drivers: await ActiveDriver.find() });
+    } catch (error) {
+      console.error('Error completing ride:', error);
+    }
+  });
+  socket.on('rideAccepted', async (data) => {
+    try {
+      const ride = await Ride.findByIdAndUpdate(data.rideId, {
+        driverId: data.driverId,
+        status: 'accepted',
+      });
+      io.to(ride.riderId).emit('rideAccepted', ride);
+    } catch (error) {
+      console.error('Error accepting ride:', error);
+    }
+  });
+
+  socket.on('completeRide', async (data) => {
+    try {
+      const ride = await Ride.findByIdAndUpdate(data.rideId, {
+        status: 'completed',
+      });
+      io.to(ride.riderId).emit('rideCompleted', ride);
+    } catch (error) {
+      console.error('Error completing ride:', error);
+    }
   });
 });
 
-function requestRide(rider, driversCopy) {
-  rider.driversCopy = driversCopy;
-  const driver = driversCopy[0];
-  if (driver) {
-    driver.status = 'choosing';
-    driver.ws.send(JSON.stringify({ type: 'rideRequest', riderId: rider.id }));
-    console.log(`Ride request sent to driver ${driver.id} from rider ${rider.id}`);
-    broadcastUserLists();
-  } else {
-    rider.status = 'available';
-    rider.ws.send(JSON.stringify({ type: 'noDriversAvailable' }));
-    console.log(`No drivers available for rider ${rider.id}`);
-    broadcastUserLists();
+
+
+async function findNextAvailableDriver(currentDriverId) {
+  try {
+    const drivers = await ActiveDriver.find({ available: true });
+    const currentIndex = drivers.findIndex((driver) => driver.driverId === currentDriverId);
+    return drivers[currentIndex + 1] || null;
+  } catch (error) {
+    console.error('Error finding next available driver:', error);
+    return null;
   }
 }
 
-function broadcastUserLists() {
-  const userLists = {
-    type: 'userLists',
-    drivers: drivers.map((driver) => ({ id: driver.id, status: driver.status })),
-    riders: riders.map((rider) => ({ id: rider.id, status: rider.status })),
-  };
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(userLists));
-      console.log(JSON.stringify(userLists));
-    }
-  });
-  console.log('Broadcasted user lists');
-  console.log(JSON.stringify(userLists));
-}
+app.get('/rides', async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decoded = jwt.verify(token, app.config['SECRET_KEY']);
+    const userId = decoded.user;
+
+    const rides = await Ride.find({ riderId: userId });
+    res.json({ rides });
+  } catch (error) {
+    console.error('Error fetching rides:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 server.listen(3000, () => {
-  console.log('Server started on port 3000');
+  console.log('Server listening on port 3000');
 });
