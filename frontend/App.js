@@ -17,6 +17,7 @@ import SignupScreen from './components/Onboarding/SignUp.js';
 import LoginScreen from './components/Onboarding/LoginScreen.js';
 // Import navigation components
 import DriverTabs from './components/Navigation/DriverTabs.js';
+import ChatScreen from './components/Rider/ChatScreen.js';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -55,6 +56,7 @@ function HomeTabs() {
       <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }}/>
       <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }}/>
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }}/>
+      <Tab.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }}/>
     </Tab.Navigator>
   );
 }
