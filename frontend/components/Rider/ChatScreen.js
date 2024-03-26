@@ -18,12 +18,13 @@ const ChatScreen = () => {
       }
     };
   }, []);
+  
 
   const fetchUserInfo = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
-        const response = await fetch('https://test.saipriya.org/user', {
+        const response = await fetch('https://login.saipriya.org/user', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -49,7 +50,7 @@ const ChatScreen = () => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
-        const newSocket = new WebSocket(`wss://chatme.saipriya.org?token=${token}`);
+        const newSocket = new WebSocket(`ws://localhost:3000?token=${token}`);
 
         newSocket.onopen = () => {
           console.log('WebSocket connected');
@@ -110,21 +111,58 @@ const ChatScreen = () => {
     }
   };
 
-  const renderMessageItem = ({ item }) => (
-    <View style={[styles.messageItem, item.sender === user?.id && styles.userMessageItem]}>
-      <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
-      <View style={styles.messageContent}>
-        <Text style={styles.senderName}>{item.senderName}</Text>
-        <Text style={styles.messageText}>{item.text}</Text>
-        <View style={styles.messageFooter}>
-          <Text style={styles.messageTime}>{new Date(item.timestamp).toLocaleString()}</Text>
-          <TouchableOpacity onPress={() => likeMessage(item.id)}>
-            <Text style={styles.likeButton}>Like ({item.likes})</Text>
-          </TouchableOpacity>
+  const renderMessageItem = ({ item }) => {
+    const isUserMessage = item.sender === user?.id;
+  
+    const renderInitialsCircle = (name) => {
+      const initials = name ? name.charAt(0).toUpperCase() : '?';
+      return (
+        <View style={styles.initialsCircle}>
+          <Text style={styles.initialsText}>{initials}</Text>
         </View>
+      );
+    };
+    
+    const senderAvatar = item.senderProfilePic
+      ? <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
+      : renderInitialsCircle(item.senderName);
+    
+    const userAvatar = user && user.name
+      ? renderInitialsCircle(user.name)
+      : null;
+    
+    return (
+      <View style={[
+        styles.messageItem, 
+        isUserMessage ? styles.userMessageItem : styles.otherMessageItem
+      ]}>
+        {!isUserMessage && (
+          <View style={styles.senderInfo}>
+            {senderAvatar}
+            <Text style={styles.senderName}>{item.senderName}</Text>
+          </View>
+        )}
+        <View style={[styles.messageContent, isUserMessage && styles.userMessageContent]}>
+          <Text style={[styles.messageText, isUserMessage && styles.userMessageText]}>
+            {item.text}
+          </Text>
+          <View style={styles.messageFooter}>
+            <Text style={styles.messageTime}>{new Date(item.timestamp).toLocaleString()}</Text>
+            <TouchableOpacity onPress={() => likeMessage(item.id)}>
+              <Text style={styles.likeButton}>Like ({item.likes})</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        {isUserMessage && (
+          <View style={styles.userInfo}>
+            {userAvatar}
+          </View>
+        )}
       </View>
-    </View>
-  );
+    );
+  };
+  
+  
 
   return (
     <View style={styles.container}>
@@ -161,6 +199,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  initialsCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#C4C4C4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  initialsText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  // ... any other styles you may need
+  userMessageText: {
+    color: '#FFFFFF', // If user message text should also be white
+  },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -179,6 +236,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333333',
+  },
+
+  initialsCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#C4C4C4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  initialsText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   messageList: {
     paddingHorizontal: 20,
@@ -209,6 +281,40 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 16,
     color: '#333333',
+  },
+
+  otherMessageItem: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+    maxWidth: '80%', // Ensure the message doesn't take the full width
+  },
+  
+  // Updated userMessageItem to only include unique styles
+  userMessageItem: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#007AFF', // iOS blue color for the user's messages
+    maxWidth: '80%', // Ensure the message doesn't take the full width
+  },
+  
+  messageContent: {
+    // Removed marginLeft to apply it conditionally below
+    flex: 1,
+  },
+  
+  // Apply conditional padding based on the message owner
+  messageText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#007AFF',
+    borderRadius: 15,
+    overflow: 'hidden', // This is to ensure the text doesn't spill out of borderRadius
+    maxWidth: '80%',
   },
   messageFooter: {
     flexDirection: 'row',
@@ -252,6 +358,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  messageItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginBottom: 10,
+    },
+    otherMessageItem: {
+    justifyContent: 'flex-start',
+    },
+    userMessageItem: {
+    justifyContent: 'flex-end',
+    },
+    senderInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+    },
+    userInfo: {
+    marginLeft: 10,
+    },
+    messageContent: {
+    maxWidth: '80%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    padding: 10,
+    },
+    userMessageContent: {
+    backgroundColor: '#007AFF',
+    },
+    messageText: {
+    fontSize: 16,
+    color: '#333333',
+    },
+    userMessageText: {
+    color: '#FFFFFF',
+    },
 });
 
 export default ChatScreen;
